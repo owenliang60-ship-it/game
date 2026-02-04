@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+
+# Claude Code
+.claude/
+.memory/
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口头对战游戏</title>
+    <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 游戏标题画面 -->
+        <div id="title-screen" class="screen active">
+            <h1 class="game-title">口头对战</h1>
+            <p class="subtitle">童年的回忆</p>
+            <div class="menu-buttons">
+                <button id="btn-start" class="menu-btn">开始游戏</button>
+                <button id="btn-settings" class="menu-btn">游戏设置</button>
+                <button id="btn-help" class="menu-btn">游戏帮助</button>
+            </div>
+        </div>
+
+        <!-- 玩家数量选择 -->
+        <div id="player-select-screen" class="screen">
+            <h2>选择玩家数量</h2>
+            <div class="player-count-selector">
+                <button class="count-btn" data-count="2">2人</button>
+                <button class="count-btn" data-count="3">3人</button>
+                <button class="count-btn" data-count="4">4人</button>
+                <button class="count-btn" data-count="5">5人</button>
+                <button class="count-btn" data-count="6">6人</button>
+                <button class="count-btn" data-count="7">7人</button>
+                <button class="count-btn" data-count="8">8人</button>
+            </div>
+            <button id="btn-back-title" class="back-btn">返回</button>
+        </div>
+
+        <!-- 角色选择画面 -->
+        <div id="character-select-screen" class="screen">
+            <h2>选择你的角色</h2>
+            <div id="character-grid" class="character-grid">
+                <!-- 角色卡片将由JS动态生成 -->
+            </div>
+            <div id="character-info" class="character-info">
+                <h3 id="char-name">选择一个角色</h3>
+                <div id="char-stats"></div>
+                <div id="char-skills"></div>
+            </div>
+            <button id="btn-confirm-char" class="confirm-btn" disabled>确认选择</button>
+        </div>
+
+        <!-- 战斗画面 -->
+        <div id="battle-screen" class="screen">
+            <!-- 顶部状态栏 -->
+            <div id="battle-header">
+                <div id="round-info">第 <span id="round-number">1</span> 回合</div>
+                <div id="phase-info">动作选择阶段</div>
+            </div>
+
+            <!-- 战场区域 -->
+            <div id="battlefield">
+                <canvas id="battle-canvas"></canvas>
+                <!-- 角色状态条将由JS动态生成 -->
+                <div id="player-status-container"></div>
+            </div>
+
+            <!-- 动作选择面板 -->
+            <div id="action-panel">
+                <h3>选择动作</h3>
+                <div id="action-buttons">
+                    <button class="action-btn" data-action="attack">普通攻击</button>
+                    <button class="action-btn" data-action="defend">防御</button>
+                    <button class="action-btn" data-action="flee">逃跑</button>
+                    <button class="action-btn" data-action="skill">使用技能</button>
+                </div>
+                <div id="skill-panel" class="hidden">
+                    <!-- 技能列表将由JS动态生成 -->
+                </div>
+                <div id="target-panel" class="hidden">
+                    <h4>选择目标</h4>
+                    <div id="target-buttons"></div>
+                </div>
+            </div>
+
+            <!-- 战斗日志 -->
+            <div id="battle-log">
+                <h4>战斗记录</h4>
+                <div id="log-content"></div>
+            </div>
+        </div>
+
+        <!-- 结算画面 -->
+        <div id="result-screen" class="screen">
+            <h2 id="result-title">游戏结束</h2>
+            <div id="winner-display"></div>
+            <div id="battle-stats"></div>
+            <button id="btn-restart" class="menu-btn">再来一局</button>
+            <button id="btn-to-title" class="menu-btn">返回标题</button>
+        </div>
+    </div>
+
+    <!-- 加载游戏脚本 -->
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
