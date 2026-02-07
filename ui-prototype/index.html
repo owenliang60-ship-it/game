@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>口头对战 - UI原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0d0d1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+
+/* ===== GAME CONTAINER ===== */
+#game-container {
+  width: 960px;
+  height: 540px;
+  background: #1a1a2e;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #533483;
+  box-shadow: 0 0 40px rgba(83, 52, 131, 0.4), inset 0 0 60px rgba(0,0,0,0.3);
+}
+
+.screen {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;
+  flex-direction: column;
+}
+.screen.active { display: flex; }
+
+/* ===== PIXEL FONT ===== */
+.pixel-font {
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: 2px;
+}
+
+/* ===== COMMON BUTTON ===== */
+.btn {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  border: 2px solid #533483;
+  background: linear-gradient(180deg, #16213e, #0f3460);
+  color: #e0d0ff;
+  padding: 10px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  position: relative;
+  image-rendering: pixelated;
+}
+.btn:hover {
+  background: linear-gradient(180deg, #1e2d50, #1a4080);
+  border-color: #e94560;
+  box-shadow: 0 0 12px rgba(233, 69, 96, 0.4);
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+.btn.primary {
+  border-color: #e94560;
+  background: linear-gradient(180deg, #a02040, #e94560);
+  color: #fff;
+  font-weight: bold;
+}
+.btn.primary:hover {
+  background: linear-gradient(180deg, #c03050, #ff5570);
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+}
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #533483;
+  background: linear-gradient(180deg, #16213e, #0f3460);
+}
+
+.btn-back {
+  position: absolute;
+  top: 12px; left: 12px;
+  padding: 6px 14px;
+  font-size: 12px;
+  z-index: 10;
+}
+
+/* ===== SCREEN 1: TITLE ===== */
+#screen-title {
+  justify-content: center;
+  align-items: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(83,52,131,0.3) 0%, transparent 60%),
+    linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%);
+}
+#screen-title .title-main {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 42px;
+  color: #f0e0ff;
+  text-shadow:
+    0 0 10px rgba(233,69,96,0.6),
+    0 0 30px rgba(233,69,96,0.3),
+    3px 3px 0 #533483;
+  margin-bottom: 16px;
+  letter-spacing: 8px;
+}
+#screen-title .title-sub {
+  font-size: 14px;
+  color: #9980b0;
+  margin-bottom: 50px;
+  letter-spacing: 4px;
+}
+#screen-title .btn-start {
+  padding: 14px 48px;
+  font-size: 18px;
+  letter-spacing: 4px;
+}
+#screen-title .version {
+  position: absolute;
+  bottom: 12px; right: 16px;
+  font-size: 10px;
+  color: #4a3a5a;
+  font-family: 'Press Start 2P', monospace;
+}
+/* Stars decoration */
+#screen-title .stars {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+#screen-title .star {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+}
+@keyframes twinkle {
+  0% { opacity: 0.2; }
+  100% { opacity: 0.8; }
+}
+
+/* ===== SCREEN 2: PLAYER COUNT ===== */
+#screen-players {
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, #1a1a2e, #0f0f23);
+}
+#screen-players .section-title {
+  font-size: 22px;
+  color: #e0d0ff;
+  margin-bottom: 40px;
+  letter-spacing: 4px;
+}
+#screen-players .player-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 500px;
+}
+.player-num-btn {
+  width: 64px; height: 64px;
+  font-size: 24px;
+  font-family: 'Press Start 2P', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #533483;
+  background: linear-gradient(180deg, #16213e, #0f3460);
+  color: #e0d0ff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.player-num-btn:hover {
+  border-color: #e94560;
+  background: linear-gradient(180deg, #1e2d50, #1a4080);
+  box-shadow: 0 0 16px rgba(233, 69, 96, 0.5);
+  transform: scale(1.08);
+}
+.player-num-btn.selected {
+  border-color: #e94560;
+  background: linear-gradient(180deg, #a02040, #e94560);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+}
+#screen-players .hint {
+  margin-top: 24px;
+  font-size: 12px;
+  color: #6a5a7a;
+}
+#screen-players .confirm-area {
+  margin-top: 30px;
+}
+
+/* ===== SCREEN 3: CHARACTER SELECT ===== */
+#screen-charselect {
+  background: linear-gradient(180deg, #1a1a2e, #0f0f23);
+  padding: 20px;
+}
+#screen-charselect .section-title {
+  text-align: center;
+  font-size: 20px;
+  color: #e0d0ff;
+  margin-bottom: 8px;
+  margin-top: 14px;
+  letter-spacing: 4px;
+}
+#screen-charselect .section-sub {
+  text-align: center;
+  font-size: 11px;
+  color: #6a5a7a;
+  margin-bottom: 20px;
+}
+.char-cards {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex: 1;
+}
+.char-card {
+  width: 250px;
+  border: 2px solid #2a2a4e;
+  background: linear-gradient(180deg, #16213e, #0f0f23);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.char-card:hover {
+  border-color: #533483;
+  box-shadow: 0 0 16px rgba(83, 52, 131, 0.4);
+}
+.char-card.selected {
+  border-color: #e94560;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.5), inset 0 0 20px rgba(233, 69, 96, 0.1);
+}
+.char-avatar {
+  width: 80px; height: 80px;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #999;
+  margin-bottom: 10px;
+  image-rendering: pixelated;
+}
+.char-card.knight .char-avatar { border-color: #4488cc; background: rgba(68,136,204,0.15); }
+.char-card.warrior .char-avatar { border-color: #cc4444; background: rgba(204,68,68,0.15); }
+.char-card.archer .char-avatar { border-color: #44cc66; background: rgba(68,204,102,0.15); }
+
+.char-name {
+  font-size: 16px;
+  color: #f0e0ff;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.char-role {
+  font-size: 11px;
+  color: #9980b0;
+  margin-bottom: 12px;
+}
+.char-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 4px;
+}
+.stat-label { color: #8a7a9a; }
+.stat-value { color: #e0d0ff; font-weight: bold; }
+.stat-value.hp { color: #44cc66; }
+.stat-value.mp { color: #4488ff; }
+.stat-value.agi { color: #ffcc44; }
+.stat-value.def { color: #cc8844; }
+.stat-value.atk { color: #e94560; }
+
+.char-desc {
+  margin-top: 10px;
+  font-size: 10px;
+  color: #6a5a7a;
+  text-align: center;
+  line-height: 1.5;
+}
+
+#screen-charselect .bottom-bar {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 0 0;
+}
+
+/* ===== SCREEN 4: BATTLE ===== */
+#screen-battle {
+  background: linear-gradient(180deg, #1a1a2e, #12122a);
+  flex-direction: column;
+}
+
+/* -- Top bar -- */
+.battle-top {
+  height: 32px;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid #2a2a4e;
+  flex-shrink: 0;
+}
+.battle-top .round-info {
+  font-size: 13px;
+  color: #e0d0ff;
+  font-weight: bold;
+}
+.battle-top .round-num {
+  color: #ffcc44;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+}
+.battle-top .alive-info {
+  font-size: 12px;
+  color: #9980b0;
+}
+.battle-top .turn-indicator {
+  font-size: 12px;
+  color: #44cc66;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* -- Arena -- */
+.battle-arena {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Action order bar */
+.action-order {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: rgba(0,0,0,0.4);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid #2a2a4e;
+  font-size: 10px;
+  color: #9980b0;
+  z-index: 5;
+}
+.action-order .order-label {
+  color: #6a5a7a;
+  margin-right: 4px;
+}
+.action-order .order-char {
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid #3a3a5e;
+  background: rgba(0,0,0,0.3);
+  font-size: 10px;
+}
+.action-order .order-char.is-player { color: #ffcc44; border-color: #ffcc44; }
+.action-order .order-char.knight { color: #4488cc; }
+.action-order .order-char.warrior { color: #cc4444; }
+.action-order .order-char.archer { color: #44cc66; }
+.action-order .order-arrow { color: #3a3a5e; font-size: 8px; }
+
+/* -- Character unit (absolute positioned in arena) -- */
+.battle-unit {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid #2a2a4e;
+  border-radius: 6px;
+  min-width: 200px;
+  transition: all 0.2s;
+}
+.battle-unit.active-turn {
+  border-color: #ffcc44;
+  box-shadow: 0 0 16px rgba(255, 204, 68, 0.3);
+  background: rgba(255, 204, 68, 0.05);
+}
+.battle-unit:hover:not(.active-turn) {
+  border-color: #e94560;
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.2);
+  cursor: pointer;
+}
+
+.unit-sprite {
+  width: 56px; height: 56px;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #777;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  position: relative;
+}
+.unit-sprite.knight { border-color: #4488cc; background: rgba(68,136,204,0.15); }
+.unit-sprite.warrior { border-color: #cc4444; background: rgba(204,68,68,0.15); }
+.unit-sprite.archer { border-color: #44cc66; background: rgba(68,204,102,0.15); }
+
+/* Status buff icons */
+.buff-icons {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+}
+.buff-icon {
+  width: 14px; height: 14px;
+  border-radius: 2px;
+  font-size: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.buff-icon.shield { background: #cc8844; }
+.buff-icon.speed { background: #44ccaa; }
+.buff-icon.reflect { background: #cc44cc; }
+
+.unit-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #e0d0ff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.unit-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+}
+
+.bar-label {
+  width: 28px;
+  text-align: right;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.bar-label.hp { color: #44cc66; }
+.bar-label.mp { color: #4488ff; }
+.bar-label.rage { color: #ff8844; }
+
+.bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #2a2a4e;
+  position: relative;
+  max-width: 140px;
+}
+.bar-fill {
+  height: 100%;
+  transition: width 0.3s;
+}
+.bar-fill.hp { background: linear-gradient(90deg, #22aa44, #44cc66); }
+.bar-fill.mp { background: linear-gradient(90deg, #2266cc, #4488ff); }
+.bar-fill.rage { background: linear-gradient(90deg, #cc4400, #ff8844); }
+
+.bar-text {
+  font-size: 9px;
+  color: #9980b0;
+  flex-shrink: 0;
+  min-width: 55px;
+}
+
+/* -- Bottom panel -- */
+.battle-bottom {
+  height: 140px;
+  background: rgba(0,0,0,0.5);
+  border-top: 2px solid #2a2a4e;
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Action panel (left) */
+.action-panel {
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #2a2a4e;
+}
+.action-panel .panel-title {
+  font-size: 11px;
+  color: #9980b0;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.action-panel .panel-title .char-indicator {
+  color: #ffcc44;
+  font-weight: bold;
+}
+
+.action-groups {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.action-group-label {
+  font-size: 9px;
+  color: #6a5a7a;
+  letter-spacing: 1px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #2a2a4e;
+  margin-bottom: 2px;
+}
+
+.action-btn {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  border: 1px solid #2a2a4e;
+  background: linear-gradient(180deg, #1a2540, #0f1a30);
+  color: #c0b0d0;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: left;
+  white-space: nowrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.action-btn:hover:not(:disabled) {
+  border-color: #e94560;
+  background: linear-gradient(180deg, #2a3550, #1a2a40);
+  box-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
+}
+.action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.action-btn .cost {
+  font-size: 9px;
+  color: #6a5a7a;
+}
+.action-btn .cost.mp { color: #4488ff; }
+.action-btn .cost.hp { color: #cc4444; }
+.action-btn .cost.rage { color: #ff8844; }
+
+.action-btn.basic {
+  border-color: #3a3a5e;
+}
+.action-btn.selected {
+  border-color: #ffcc44;
+  background: linear-gradient(180deg, #3a3520, #2a2a10);
+  color: #ffcc44;
+}
+
+/* Log panel (right) */
+.log-panel {
+  width: 310px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+.log-panel .panel-title {
+  font-size: 11px;
+  color: #9980b0;
+  margin-bottom: 6px;
+}
+.log-content {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #8a7a9a;
+  background: rgba(0,0,0,0.3);
+  padding: 6px 8px;
+  border: 1px solid #1a1a3e;
+}
+.log-content .log-line { margin-bottom: 2px; }
+.log-content .log-dmg { color: #e94560; }
+.log-content .log-heal { color: #44cc66; }
+.log-content .log-info { color: #9980b0; }
+.log-content .log-skill { color: #ffcc44; }
+.log-content .log-miss { color: #6a5a7a; }
+
+/* ===== SCREEN 5: RESULT ===== */
+#screen-result {
+  justify-content: center;
+  align-items: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(233,69,96,0.15) 0%, transparent 60%),
+    linear-gradient(180deg, #1a1a2e, #0f0f23);
+}
+.result-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 28px;
+  margin-bottom: 8px;
+  letter-spacing: 4px;
+}
+.result-title.victory {
+  color: #ffcc44;
+  text-shadow: 0 0 20px rgba(255,204,68,0.4), 2px 2px 0 #aa8800;
+}
+.result-title.defeat {
+  color: #e94560;
+  text-shadow: 0 0 20px rgba(233,69,96,0.4), 2px 2px 0 #8a1020;
+}
+.result-status {
+  font-size: 18px;
+  color: #e0d0ff;
+  margin-bottom: 30px;
+}
+
+.result-survivors {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.survivor-card {
+  text-align: center;
+  padding: 12px 20px;
+  border: 1px solid #2a2a4e;
+  background: rgba(0,0,0,0.3);
+}
+.survivor-sprite {
+  width: 48px; height: 48px;
+  border: 2px solid #ffcc44;
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #777;
+}
+.survivor-name {
+  font-size: 13px;
+  color: #e0d0ff;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.survivor-hp {
+  font-size: 11px;
+  color: #44cc66;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 32px;
+  margin-bottom: 30px;
+  padding: 16px 24px;
+  border: 1px solid #2a2a4e;
+  background: rgba(0,0,0,0.3);
+}
+.result-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+}
+.result-stat .label { color: #8a7a9a; }
+.result-stat .value { color: #e0d0ff; font-weight: bold; }
+
+.result-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+/* ===== NAV DOTS ===== */
+.nav-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+}
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #2a2a4e;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #3a3a5e;
+}
+.nav-dot.active {
+  background: #e94560;
+  border-color: #e94560;
+  box-shadow: 0 0 6px rgba(233, 69, 96, 0.5);
+}
+.nav-dot:hover { border-color: #e94560; }
+
+/* Tooltip for nav */
+.nav-dots .nav-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: #9980b0;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.nav-dots .nav-dot:hover::after { opacity: 1; }
+.nav-dots .nav-dot { position: relative; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #533483; border-radius: 2px; }
+
+/* ===== TARGET SELECTOR OVERLAY ===== */
+.target-hint {
+  font-size: 10px;
+  color: #ffcc44;
+  margin-top: 2px;
+  animation: pulse 1.5s infinite;
+}
+</style>
+</head>
+<body>
+
+<div id="game-container">
+
+  <!-- ============================== -->
+  <!-- SCREEN 1: TITLE                -->
+  <!-- ============================== -->
+  <div id="screen-title" class="screen active">
+    <div class="stars" id="stars-container"></div>
+    <div class="title-main">口头对战</div>
+    <div class="title-sub">策略博弈回合制对战</div>
+    <button class="btn primary btn-start" onclick="showScreen('screen-players')">
+      开始游戏
+    </button>
+    <div class="version pixel-font">v0.9 PROTOTYPE</div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- SCREEN 2: PLAYER COUNT         -->
+  <!-- ============================== -->
+  <div id="screen-players" class="screen">
+    <button class="btn btn-back" onclick="showScreen('screen-title')">← 返回</button>
+    <div class="section-title">选择对战人数</div>
+    <div class="player-grid">
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 2)">2</button>
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 3)" id="default-player-count">3</button>
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 4)">4</button>
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 5)">5</button>
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 6)">6</button>
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 7)">7</button>
+      <button class="player-num-btn" onclick="selectPlayerCount(this, 8)">8</button>
+    </div>
+    <div class="hint">1名玩家 + 其余AI控制</div>
+    <div class="confirm-area">
+      <button class="btn primary" id="btn-confirm-players" onclick="showScreen('screen-charselect')" disabled>
+        确认
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- SCREEN 3: CHARACTER SELECT     -->
+  <!-- ============================== -->
+  <div id="screen-charselect" class="screen">
+    <button class="btn btn-back" onclick="showScreen('screen-players')">← 返回</button>
+    <div class="section-title">选择你的角色</div>
+    <div class="section-sub">AI将自动为其他玩家分配角色</div>
+
+    <div class="char-cards">
+      <!-- Knight -->
+      <div class="char-card knight" onclick="selectChar(this, 'knight')">
+        <div class="char-avatar">
+          <span>角色立绘</span>
+        </div>
+        <div class="char-name">骑士</div>
+        <div class="char-role">均衡型战士 · 攻守兼备</div>
+        <div class="char-stats">
+          <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value hp">300</span></div>
+          <div class="stat-row"><span class="stat-label">MP</span><span class="stat-value mp">150</span></div>
+          <div class="stat-row"><span class="stat-label">AGI</span><span class="stat-value agi">7</span></div>
+          <div class="stat-row"><span class="stat-label">DEF</span><span class="stat-value def">2</span></div>
+          <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-value atk">30</span></div>
+          <div class="stat-row"><span class="stat-label">RAGE</span><span class="stat-value" style="color:#ff8844">0/100</span></div>
+        </div>
+        <div class="char-desc">
+          技能多样，6个主动技能<br>
+          高敏捷（7），行动优先<br>
+          骑马冲锋、追砍逃跑者
+        </div>
+      </div>
+
+      <!-- Armored Warrior -->
+      <div class="char-card warrior" onclick="selectChar(this, 'warrior')">
+        <div class="char-avatar">
+          <span>角色立绘</span>
+        </div>
+        <div class="char-name">装甲战士</div>
+        <div class="char-role">坦克型 · 稳扎稳打</div>
+        <div class="char-stats">
+          <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value hp">350</span></div>
+          <div class="stat-row"><span class="stat-label">MP</span><span class="stat-value mp">120</span></div>
+          <div class="stat-row"><span class="stat-label">AGI</span><span class="stat-value agi">4</span></div>
+          <div class="stat-row"><span class="stat-label">DEF</span><span class="stat-value def">3</span></div>
+          <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-value atk">25</span></div>
+          <div class="stat-row"><span class="stat-label">RAGE</span><span class="stat-value" style="color:#ff8844">0/100</span></div>
+        </div>
+        <div class="char-desc">
+          高生命高韧性，5个技能<br>
+          被动：钢铁意志(+5怒气/回合)<br>
+          顶盾+反震，近战噩梦
+        </div>
+      </div>
+
+      <!-- Archer -->
+      <div class="char-card archer" onclick="selectChar(this, 'archer')">
+        <div class="char-avatar">
+          <span>角色立绘</span>
+        </div>
+        <div class="char-name">弓箭手</div>
+        <div class="char-role">远程输出 · 技能多变</div>
+        <div class="char-stats">
+          <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value hp">270</span></div>
+          <div class="stat-row"><span class="stat-label">MP</span><span class="stat-value mp">150</span></div>
+          <div class="stat-row"><span class="stat-label">AGI</span><span class="stat-value agi">6</span></div>
+          <div class="stat-row"><span class="stat-label">DEF</span><span class="stat-value def">1.5</span></div>
+          <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-value atk">20</span></div>
+          <div class="stat-row"><span class="stat-label">RAGE</span><span class="stat-value" style="color:#ff8844">0/100</span></div>
+        </div>
+        <div class="char-desc">
+          最多技能（7个），远程为主<br>
+          被动：游击战术 + 精确瞄准<br>
+          漫天花雨(80真实伤害全体)
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn primary" id="btn-confirm-char" onclick="showScreen('screen-battle')" disabled>
+        确认选择
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- SCREEN 4: BATTLE (CORE)        -->
+  <!-- ============================== -->
+  <div id="screen-battle" class="screen">
+
+    <!-- Top bar -->
+    <div class="battle-top">
+      <div class="round-info">回合 <span class="round-num">3</span></div>
+      <div class="turn-indicator">▶ 你的回合 — 请选择行动</div>
+      <div class="alive-info">存活: 3/3</div>
+    </div>
+
+    <!-- Arena (circular/arc layout - all characters are independent) -->
+    <div class="battle-arena">
+
+      <!-- Action order indicator -->
+      <div class="action-order">
+        <span class="order-label">行动顺序:</span>
+        <span class="order-char knight is-player">骑士★ AGI 8</span>
+        <span class="order-arrow">▸</span>
+        <span class="order-char archer">弓箭手 AGI 8</span>
+        <span class="order-arrow">▸</span>
+        <span class="order-char warrior">装甲战士 AGI 4</span>
+      </div>
+
+      <!-- Knight (Player) - bottom left, active turn -->
+      <div class="battle-unit active-turn" style="left:60px; top:120px;">
+        <div class="unit-sprite knight">
+          <span>骑士</span>
+          <div class="buff-icons">
+            <div class="buff-icon speed" title="马鞭加速 AGI+1">速</div>
+          </div>
+        </div>
+        <div class="unit-info">
+          <div class="unit-name">骑士 <span style="font-size:10px;color:#ffcc44;">★ 你</span></div>
+          <div class="unit-bars">
+            <div class="bar-row">
+              <span class="bar-label hp">HP</span>
+              <div class="bar-track"><div class="bar-fill hp" style="width:76%"></div></div>
+              <span class="bar-text">228 / 300</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label mp">MP</span>
+              <div class="bar-track"><div class="bar-fill mp" style="width:73%"></div></div>
+              <span class="bar-text">110 / 150</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label rage">怒气</span>
+              <div class="bar-track"><div class="bar-fill rage" style="width:72%"></div></div>
+              <span class="bar-text">72 / 100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Armored Warrior (AI) - top center -->
+      <div class="battle-unit" style="left:370px; top:20px;">
+        <div class="unit-sprite warrior">
+          <span>装甲</span>
+          <div class="buff-icons">
+            <div class="buff-icon shield" title="顶盾 剩余2回合 DEF+2">盾</div>
+            <div class="buff-icon reflect" title="钢铁意志">钢</div>
+          </div>
+        </div>
+        <div class="unit-info">
+          <div class="unit-name">装甲战士 <span style="font-size:10px;color:#9980b0;">AI</span></div>
+          <div class="unit-bars">
+            <div class="bar-row">
+              <span class="bar-label hp">HP</span>
+              <div class="bar-track"><div class="bar-fill hp" style="width:83%"></div></div>
+              <span class="bar-text">290 / 350</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label mp">MP</span>
+              <div class="bar-track"><div class="bar-fill mp" style="width:67%"></div></div>
+              <span class="bar-text">80 / 120</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label rage">怒气</span>
+              <div class="bar-track"><div class="bar-fill rage" style="width:15%"></div></div>
+              <span class="bar-text">15 / 100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Archer (AI) - bottom right -->
+      <div class="battle-unit" style="left:680px; top:120px;">
+        <div class="unit-sprite archer">
+          <span>弓箭</span>
+          <div class="buff-icons">
+            <div class="buff-icon speed" title="游击战术 AGI+2">游</div>
+          </div>
+        </div>
+        <div class="unit-info">
+          <div class="unit-name">弓箭手 <span style="font-size:10px;color:#9980b0;">AI</span></div>
+          <div class="unit-bars">
+            <div class="bar-row">
+              <span class="bar-label hp">HP</span>
+              <div class="bar-track"><div class="bar-fill hp" style="width:59%"></div></div>
+              <span class="bar-text">160 / 270</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label mp">MP</span>
+              <div class="bar-track"><div class="bar-fill mp" style="width:60%"></div></div>
+              <span class="bar-text">90 / 150</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label rage">怒气</span>
+              <div class="bar-track"><div class="bar-fill rage" style="width:45%"></div></div>
+              <span class="bar-text">45 / 100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom panel -->
+    <div class="battle-bottom">
+      <!-- Action panel -->
+      <div class="action-panel">
+        <div class="panel-title">
+          <span class="char-indicator">◆ 骑士</span> 选择行动
+          <span class="target-hint">[ 点击技能后选择目标 ]</span>
+        </div>
+        <div class="action-groups">
+          <!-- Basic actions -->
+          <div class="action-group">
+            <div class="action-group-label">基础动作</div>
+            <button class="action-btn basic" onclick="selectAction(this)">普通攻击 <span class="cost">30伤害</span></button>
+            <button class="action-btn basic" onclick="selectAction(this)">防御 <span class="cost">韧性+50%</span></button>
+            <button class="action-btn basic" onclick="selectAction(this)">逃跑 <span class="cost">70%闪避</span></button>
+          </div>
+          <!-- Skills -->
+          <div class="action-group">
+            <div class="action-group-label">技能</div>
+            <button class="action-btn" onclick="selectAction(this)">升龙击 <span class="cost mp">10MP</span></button>
+            <button class="action-btn" onclick="selectAction(this)">冲锋 <span class="cost hp">10HP</span></button>
+            <button class="action-btn" onclick="selectAction(this)">追砍 <span class="cost mp">10MP</span></button>
+          </div>
+          <div class="action-group">
+            <div class="action-group-label">&nbsp;</div>
+            <button class="action-btn" onclick="selectAction(this)">太阳之弓 <span class="cost mp">15MP</span></button>
+            <button class="action-btn" onclick="selectAction(this)">马鞭 <span class="cost" style="color:#44cc66">已用</span></button>
+            <button class="action-btn" onclick="selectAction(this)" disabled>马踏飞燕 <span class="cost rage">80怒气</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log panel -->
+      <div class="log-panel">
+        <div class="panel-title">战斗日志</div>
+        <div class="log-content">
+          <div class="log-line log-info">═══ 第 3 回合 ═══</div>
+          <div class="log-line log-info">装甲战士 钢铁意志触发 → 怒气+5</div>
+          <div class="log-line log-info">─── 等待玩家行动 ───</div>
+          <div class="log-line" style="height:4px"></div>
+          <div class="log-line log-info">═══ 第 2 回合 ═══</div>
+          <div class="log-line log-skill">骑士 使用 马鞭 → AGI 7→8, 逃跑率→70%</div>
+          <div class="log-line log-dmg">弓箭手 太阳之弓 → 骑士 42伤害 (技能×2触发)</div>
+          <div class="log-line log-info">装甲战士 使用 顶盾 → DEF+2 (3回合)</div>
+          <div class="log-line" style="height:4px"></div>
+          <div class="log-line log-info">═══ 第 1 回合 ═══</div>
+          <div class="log-line log-dmg">骑士 升龙击 → 弓箭手 36.25伤害</div>
+          <div class="log-line log-dmg">弓箭手 长虹贯日 → 骑士 25.5伤害, 装甲战士 14.7伤害</div>
+          <div class="log-line log-dmg">装甲战士 冲锋 → 弓箭手 63.75伤害</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- SCREEN 5: RESULT               -->
+  <!-- ============================== -->
+  <div id="screen-result" class="screen">
+    <div class="result-title victory">战斗结束</div>
+    <div class="result-status">🏆 胜利！骑士笑到最后</div>
+
+    <div class="result-survivors">
+      <div class="survivor-card">
+        <div class="survivor-sprite" style="border-color:#4488cc; background:rgba(68,136,204,0.15);">
+          <span style="font-size:8px;color:#777">骑士</span>
+        </div>
+        <div class="survivor-name">骑士 (你)</div>
+        <div class="survivor-hp">HP: 86 / 300</div>
+      </div>
+    </div>
+
+    <div class="result-stats">
+      <div class="result-stat"><span class="label">总回合数</span><span class="value">9</span></div>
+      <div class="result-stat"><span class="label">造成总伤害</span><span class="value">682.5</span></div>
+      <div class="result-stat"><span class="label">使用技能次数</span><span class="value">7</span></div>
+      <div class="result-stat"><span class="label">承受总伤害</span><span class="value">214</span></div>
+      <div class="result-stat"><span class="label">逃跑次数</span><span class="value">2</span></div>
+      <div class="result-stat"><span class="label">防御次数</span><span class="value">1</span></div>
+      <div class="result-stat"><span class="label">击杀顺序</span><span class="value">弓箭手 → 装甲战士</span></div>
+      <div class="result-stat"><span class="label">最高单次伤害</span><span class="value">马踏飞燕 112.5</span></div>
+    </div>
+
+    <div class="result-buttons">
+      <button class="btn primary" onclick="showScreen('screen-players')">再来一局</button>
+      <button class="btn" onclick="showScreen('screen-title')">返回标题</button>
+    </div>
+  </div>
+
+  <!-- Navigation dots -->
+  <div class="nav-dots">
+    <div class="nav-dot active" data-label="标题" onclick="showScreen('screen-title')"></div>
+    <div class="nav-dot" data-label="人数" onclick="showScreen('screen-players')"></div>
+    <div class="nav-dot" data-label="角色" onclick="showScreen('screen-charselect')"></div>
+    <div class="nav-dot" data-label="战斗" onclick="showScreen('screen-battle')"></div>
+    <div class="nav-dot" data-label="结算" onclick="showScreen('screen-result')"></div>
+  </div>
+
+</div>
+
+<script>
+// ===== Screen navigation =====
+const screens = ['screen-title', 'screen-players', 'screen-charselect', 'screen-battle', 'screen-result'];
+
+function showScreen(id) {
+  screens.forEach(s => {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+
+  // Update nav dots
+  const dots = document.querySelectorAll('.nav-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', screens[i] === id);
+  });
+}
+
+// ===== Player count selection =====
+let selectedPlayerCount = null;
+
+function selectPlayerCount(btn, num) {
+  document.querySelectorAll('.player-num-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedPlayerCount = num;
+  document.getElementById('btn-confirm-players').disabled = false;
+}
+
+// ===== Character selection =====
+let selectedChar = null;
+
+function selectChar(card, charType) {
+  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedChar = charType;
+  document.getElementById('btn-confirm-char').disabled = false;
+}
+
+// ===== Action selection =====
+function selectAction(btn) {
+  if (btn.disabled) return;
+  document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// ===== Generate stars for title screen =====
+function generateStars() {
+  const container = document.getElementById('stars-container');
+  for (let i = 0; i < 60; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 2 + 's';
+    star.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    star.style.width = star.style.height = (1 + Math.random() * 2) + 'px';
+    container.appendChild(star);
+  }
+}
+
+// ===== Init =====
+generateStars();
+</script>
+
+</body>
+</html>
