@@ -1,0 +1,662 @@
+{
+  "armored-warrior": {
+    "character": "armored-warrior",
+    "rotations": {
+      "directions": [
+        "south",
+        "west",
+        "north",
+        "east"
+      ],
+      "path": "characters/armored-warrior/rotations"
+    },
+    "animations": {
+      "idle": {
+        "source": "breathing-idle",
+        "directions": {
+          "south": {
+            "source": "south-west",
+            "frames": 4,
+            "path": "characters/armored-warrior/animations/idle/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 4,
+            "path": "characters/armored-warrior/animations/idle/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 4,
+            "path": "characters/armored-warrior/animations/idle/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 4,
+            "path": "characters/armored-warrior/animations/idle/east"
+          }
+        }
+      },
+      "attack": {
+        "source": "cross-punch",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/attack/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/attack/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/attack/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/attack/east"
+          }
+        }
+      },
+      "hit": {
+        "source": "taking-punch",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/hit/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/hit/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/hit/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/hit/east"
+          }
+        }
+      },
+      "death": {
+        "source": "falling-back-death",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 7,
+            "path": "characters/armored-warrior/animations/death/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 7,
+            "path": "characters/armored-warrior/animations/death/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 7,
+            "path": "characters/armored-warrior/animations/death/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 7,
+            "path": "characters/armored-warrior/animations/death/east"
+          }
+        }
+      },
+      "run": {
+        "source": "running-6-frames",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/run/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/run/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/run/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/run/east"
+          }
+        }
+      },
+      "defense": {
+        "source": "crouching",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 5,
+            "path": "characters/armored-warrior/animations/defense/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 5,
+            "path": "characters/armored-warrior/animations/defense/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 5,
+            "path": "characters/armored-warrior/animations/defense/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 5,
+            "path": "characters/armored-warrior/animations/defense/east"
+          }
+        }
+      },
+      "escape": {
+        "source": "running-slide",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/escape/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/escape/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/escape/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/armored-warrior/animations/escape/east"
+          }
+        }
+      },
+      "idle-alt": {
+        "source": "fight-stance-idle-8-frames",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 8,
+            "path": "characters/armored-warrior/animations/idle-alt/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 8,
+            "path": "characters/armored-warrior/animations/idle-alt/west"
+          },
+          "north": {
+            "source": "north-east",
+            "frames": 8,
+            "path": "characters/armored-warrior/animations/idle-alt/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 8,
+            "path": "characters/armored-warrior/animations/idle-alt/east"
+          }
+        }
+      }
+    },
+    "frame_totals": {
+      "south": 48,
+      "west": 48,
+      "north": 48,
+      "east": 48
+    }
+  },
+  "archer": {
+    "character": "archer",
+    "rotations": {
+      "directions": [
+        "south",
+        "west",
+        "north",
+        "east"
+      ],
+      "path": "characters/archer/rotations"
+    },
+    "animations": {
+      "idle": {
+        "source": "breathing-idle",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 4,
+            "path": "characters/archer/animations/idle/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 4,
+            "path": "characters/archer/animations/idle/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 4,
+            "path": "characters/archer/animations/idle/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 4,
+            "path": "characters/archer/animations/idle/east"
+          }
+        }
+      },
+      "attack": {
+        "source": "fireball",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/archer/animations/attack/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 6,
+            "path": "characters/archer/animations/attack/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/archer/animations/attack/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/archer/animations/attack/east"
+          }
+        }
+      },
+      "hit": {
+        "source": "taking-punch",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/archer/animations/hit/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 6,
+            "path": "characters/archer/animations/hit/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/archer/animations/hit/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/archer/animations/hit/east"
+          }
+        }
+      },
+      "death": {
+        "source": "falling-back-death",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 7,
+            "path": "characters/archer/animations/death/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 7,
+            "path": "characters/archer/animations/death/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 7,
+            "path": "characters/archer/animations/death/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 7,
+            "path": "characters/archer/animations/death/east"
+          }
+        }
+      },
+      "run": {
+        "source": "running-6-frames",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/archer/animations/run/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 6,
+            "path": "characters/archer/animations/run/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/archer/animations/run/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/archer/animations/run/east"
+          }
+        }
+      },
+      "defense": {
+        "source": "crouching",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 5,
+            "path": "characters/archer/animations/defense/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 5,
+            "path": "characters/archer/animations/defense/west"
+          },
+          "north": {
+            "source": "west",
+            "frames": 5,
+            "path": "characters/archer/animations/defense/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 5,
+            "path": "characters/archer/animations/defense/east"
+          }
+        }
+      },
+      "escape": {
+        "source": "running-slide",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/archer/animations/escape/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 6,
+            "path": "characters/archer/animations/escape/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/archer/animations/escape/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/archer/animations/escape/east"
+          }
+        }
+      },
+      "idle-alt": {
+        "source": "fight-stance-idle-8-frames",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 8,
+            "path": "characters/archer/animations/idle-alt/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 8,
+            "path": "characters/archer/animations/idle-alt/west"
+          },
+          "north": {
+            "source": "north-west",
+            "frames": 8,
+            "path": "characters/archer/animations/idle-alt/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 8,
+            "path": "characters/archer/animations/idle-alt/east"
+          }
+        }
+      }
+    },
+    "frame_totals": {
+      "south": 48,
+      "west": 48,
+      "north": 48,
+      "east": 48
+    }
+  },
+  "knight": {
+    "character": "knight",
+    "rotations": {
+      "directions": [
+        "south",
+        "west",
+        "north",
+        "east"
+      ],
+      "path": "characters/knight/rotations"
+    },
+    "animations": {
+      "idle": {
+        "source": "breathing-idle",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 4,
+            "path": "characters/knight/animations/idle/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 4,
+            "path": "characters/knight/animations/idle/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 4,
+            "path": "characters/knight/animations/idle/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 4,
+            "path": "characters/knight/animations/idle/east"
+          }
+        }
+      },
+      "attack": {
+        "source": "cross-punch",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/knight/animations/attack/south"
+          },
+          "west": {
+            "source": "south-west",
+            "frames": 6,
+            "path": "characters/knight/animations/attack/west"
+          },
+          "north": {
+            "source": "north",
+            "frames": 6,
+            "path": "characters/knight/animations/attack/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/knight/animations/attack/east"
+          }
+        }
+      },
+      "hit": {
+        "source": "taking-punch",
+        "directions": {
+          "south": {
+            "source": "west",
+            "frames": 6,
+            "path": "characters/knight/animations/hit/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 6,
+            "path": "characters/knight/animations/hit/west"
+          },
+          "north": {
+            "source": "north-east",
+            "frames": 6,
+            "path": "characters/knight/animations/hit/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/knight/animations/hit/east"
+          }
+        }
+      },
+      "death": {
+        "source": "falling-back-death",
+        "directions": {
+          "south": {
+            "source": "south-west",
+            "frames": 7,
+            "path": "characters/knight/animations/death/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 7,
+            "path": "characters/knight/animations/death/west"
+          },
+          "north": {
+            "source": "west",
+            "frames": 7,
+            "path": "characters/knight/animations/death/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 7,
+            "path": "characters/knight/animations/death/east"
+          }
+        }
+      },
+      "run": {
+        "source": "running-6-frames",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/knight/animations/run/south"
+          },
+          "west": {
+            "source": "mirror(east)",
+            "frames": 6,
+            "path": "characters/knight/animations/run/west"
+          },
+          "north": {
+            "source": "north-east",
+            "frames": 6,
+            "path": "characters/knight/animations/run/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/knight/animations/run/east"
+          }
+        }
+      },
+      "defense": {
+        "source": "crouching",
+        "directions": {
+          "south": {
+            "source": "west",
+            "frames": 5,
+            "path": "characters/knight/animations/defense/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 5,
+            "path": "characters/knight/animations/defense/west"
+          },
+          "north": {
+            "source": "north-west",
+            "frames": 5,
+            "path": "characters/knight/animations/defense/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 5,
+            "path": "characters/knight/animations/defense/east"
+          }
+        }
+      },
+      "escape": {
+        "source": "running-slide",
+        "directions": {
+          "south": {
+            "source": "south",
+            "frames": 6,
+            "path": "characters/knight/animations/escape/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 6,
+            "path": "characters/knight/animations/escape/west"
+          },
+          "north": {
+            "source": "north-west",
+            "frames": 6,
+            "path": "characters/knight/animations/escape/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 6,
+            "path": "characters/knight/animations/escape/east"
+          }
+        }
+      },
+      "idle-alt": {
+        "source": "fight-stance-idle-8-frames",
+        "directions": {
+          "south": {
+            "source": "south-west",
+            "frames": 8,
+            "path": "characters/knight/animations/idle-alt/south"
+          },
+          "west": {
+            "source": "west",
+            "frames": 8,
+            "path": "characters/knight/animations/idle-alt/west"
+          },
+          "north": {
+            "source": "north-east",
+            "frames": 8,
+            "path": "characters/knight/animations/idle-alt/north"
+          },
+          "east": {
+            "source": "mirror(west)",
+            "frames": 8,
+            "path": "characters/knight/animations/idle-alt/east"
+          }
+        }
+      }
+    },
+    "frame_totals": {
+      "south": 48,
+      "west": 48,
+      "north": 48,
+      "east": 48
+    }
+  }
+}

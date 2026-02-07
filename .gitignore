@@ -1,9 +1,11 @@
 # OS
 .DS_Store
+Thumbs.db
 
 # Claude Code
 .claude/
 .memory/
+.mcp.json
 
 # Dependencies
 node_modules/
@@ -15,3 +17,9 @@ build/
 # Environment
 .env
 .env.local
+
+# PixelLab raw exports (large zips, keep extracted only)
+assets/characters/*/*.zip
+
+# Backup files
+*.backup.*
