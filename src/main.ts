@@ -1,6 +1,7 @@
 import { Application } from 'pixi.js';
 import { AssetLoader } from './game/AssetLoader';
 import { BattleScene } from './game/scenes/BattleScene';
+import { BattleManager } from './core/BattleManager';
 
 /** Game canvas dimensions (16:9 aspect ratio) */
 const GAME_WIDTH = 960;
@@ -12,7 +13,7 @@ async function main() {
   await app.init({
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
-    backgroundColor: 0x2a1a4a,
+    backgroundColor: 0x1a0e2e,
     antialias: false,
     roundPixels: true,
     resolution: window.devicePixelRatio || 1,
@@ -39,8 +40,18 @@ async function main() {
   const assetLoader = new AssetLoader();
   await assetLoader.loadAll();
 
-  // Start with battle scene (demo: show all 3 characters)
-  const battleScene = new BattleScene(app, assetLoader);
+  // Create battle with 3 fighters (M2: all AI-controlled)
+  const battle = new BattleManager({
+    fighters: [
+      { characterClass: 'knight', isPlayer: true, displayName: '骑士 (你)' },
+      { characterClass: 'armored-warrior', isPlayer: false, displayName: '装甲战士' },
+      { characterClass: 'archer', isPlayer: false, displayName: '弓箭手' },
+    ],
+    aiDifficulty: 'normal',
+  });
+
+  // Start battle scene
+  const battleScene = new BattleScene(app, assetLoader, battle);
   app.stage.addChild(battleScene.container);
   battleScene.start();
 }
