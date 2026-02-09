@@ -1,0 +1,445 @@
+{
+  "round": 7,
+  "phase": "battle-end",
+  "fighters": [
+    {
+      "id": "knight-0",
+      "characterClass": "knight",
+      "displayName": "骑士",
+      "isPlayer": true,
+      "hp": -6,
+      "maxHp": 300,
+      "mp": 150,
+      "maxMp": 150,
+      "rage": 100,
+      "currentAgi": 7,
+      "currentDef": 2,
+      "baseAgi": 7,
+      "baseDef": 2,
+      "baseAtk": 30,
+      "alive": false,
+      "statusEffects": [],
+      "whipUsed": false,
+      "guerrillaActive": false,
+      "usedRangedSkillThisRound": false,
+      "chosenAction": {
+        "type": "skill",
+        "skillId": "knight-charge",
+        "targetIds": [
+          "archer-1"
+        ]
+      },
+      "escapeSuccess": null,
+      "isDefending": false,
+      "passives": [],
+      "skillIds": [
+        "knight-dragon-strike",
+        "knight-charge",
+        "knight-chase-slash",
+        "knight-sun-bow",
+        "knight-whip",
+        "knight-flying-trample"
+      ],
+      "basicAttackType": "melee"
+    },
+    {
+      "id": "archer-1",
+      "characterClass": "archer",
+      "displayName": "弓箭手",
+      "isPlayer": true,
+      "hp": 36.25,
+      "maxHp": 270,
+      "mp": 50,
+      "maxMp": 150,
+      "rage": 83.75,
+      "currentAgi": 6,
+      "currentDef": 1.5,
+      "baseAgi": 6,
+      "baseDef": 1.5,
+      "baseAtk": 20,
+      "alive": true,
+      "statusEffects": [],
+      "whipUsed": false,
+      "guerrillaActive": false,
+      "usedRangedSkillThisRound": false,
+      "chosenAction": {
+        "type": "skill",
+        "skillId": "archer-dagger-thrust",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "escapeSuccess": null,
+      "isDefending": false,
+      "passives": [
+        {
+          "id": "guerrilla-tactics",
+          "name": "游击战术",
+          "trigger": "on-ranged-skill",
+          "effect": {
+            "type": "guerrilla-tactics",
+            "agiBonus": 2
+          }
+        },
+        {
+          "id": "precise-aim",
+          "name": "精确瞄准",
+          "trigger": "on-damage-dealt",
+          "effect": {
+            "type": "precise-aim",
+            "damagePerAgi": 5
+          }
+        }
+      ],
+      "skillIds": [
+        "archer-sun-bow",
+        "archer-rainbow-pierce",
+        "archer-rainbow-cloud",
+        "archer-return-shot",
+        "archer-dagger-thrust",
+        "archer-arrow-rain"
+      ],
+      "basicAttackType": "ranged"
+    }
+  ],
+  "actionLog": [
+    {
+      "round": 1,
+      "actorId": "knight-0",
+      "action": {
+        "type": "skill",
+        "skillId": "knight-whip"
+      },
+      "results": [
+        {
+          "resultType": "buff",
+          "targetId": "knight-0",
+          "effectApplied": null,
+          "whipPermanent": true,
+          "agiAfter": 8,
+          "escapeRateAfter": 0.7
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-sun-bow",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 30,
+          "conditionMet": true,
+          "conditionMultiplier": 2,
+          "defReduction": 12,
+          "precisionBonus": 0,
+          "finalDamage": 48,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 48,
+          "targetHpAfter": 252,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-rainbow-pierce",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 30,
+          "conditionMet": true,
+          "conditionMultiplier": 1.5,
+          "defReduction": 9,
+          "precisionBonus": 0,
+          "finalDamage": 36,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 36,
+          "targetHpAfter": 216,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "actorId": "knight-0",
+      "action": {
+        "type": "skill",
+        "skillId": "knight-charge",
+        "targetIds": [
+          "archer-1"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "archer-1",
+          "baseDamage": 75,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 11.25,
+          "precisionBonus": 0,
+          "finalDamage": 63.75,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 63.75,
+          "targetHpAfter": 206.25,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-return-shot",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 30,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 6,
+          "precisionBonus": 0,
+          "finalDamage": 24,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 24,
+          "targetHpAfter": 182,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "actorId": "knight-0",
+      "action": {
+        "type": "skill",
+        "skillId": "knight-flying-trample",
+        "targetIds": [
+          "archer-1"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "archer-1",
+          "baseDamage": 50,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 7.5,
+          "precisionBonus": 0,
+          "finalDamage": 42.5,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 42.5,
+          "targetHpAfter": 163.75,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-rainbow-pierce",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 30,
+          "conditionMet": true,
+          "conditionMultiplier": 1.5,
+          "defReduction": 9,
+          "precisionBonus": 0,
+          "finalDamage": 36,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 36,
+          "targetHpAfter": 146,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "actorId": "knight-0",
+      "action": {
+        "type": "skill",
+        "skillId": "knight-charge",
+        "targetIds": [
+          "archer-1"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "archer-1",
+          "baseDamage": 75,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 11.25,
+          "precisionBonus": 0,
+          "finalDamage": 63.75,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 63.75,
+          "targetHpAfter": 100,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-arrow-rain",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 80,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 0,
+          "precisionBonus": 0,
+          "finalDamage": 80,
+          "isTrueDamage": true,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 80,
+          "targetHpAfter": 56,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 6,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-rainbow-pierce",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 30,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 6,
+          "precisionBonus": 0,
+          "finalDamage": 24,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 24,
+          "targetHpAfter": 32,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "actorId": "knight-0",
+      "action": {
+        "type": "skill",
+        "skillId": "knight-charge",
+        "targetIds": [
+          "archer-1"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "archer-1",
+          "baseDamage": 75,
+          "conditionMet": false,
+          "conditionMultiplier": 1,
+          "defReduction": 11.25,
+          "precisionBonus": 0,
+          "finalDamage": 63.75,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 63.75,
+          "targetHpAfter": 36.25,
+          "targetDied": false
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "actorId": "archer-1",
+      "action": {
+        "type": "skill",
+        "skillId": "archer-dagger-thrust",
+        "targetIds": [
+          "knight-0"
+        ]
+      },
+      "results": [
+        {
+          "resultType": "damage",
+          "targetId": "knight-0",
+          "baseDamage": 35,
+          "conditionMet": true,
+          "conditionMultiplier": 1,
+          "defReduction": 7,
+          "precisionBonus": 0,
+          "finalDamage": 28,
+          "isTrueDamage": false,
+          "isReflected": false,
+          "dodged": false,
+          "rageGained": 28,
+          "targetHpAfter": -6,
+          "targetDied": true
+        }
+      ]
+    }
+  ],
+  "winner": "archer-1"
+}

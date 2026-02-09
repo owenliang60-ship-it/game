@@ -5,6 +5,7 @@ import { CharacterSprite } from '../entities/CharacterSprite';
 import type { Direction, AnimationState } from '../entities/CharacterSprite';
 import { BattleManager } from '@/core/BattleManager';
 import type { BattleConfig, CharacterId, CharacterClass, FighterSnapshot } from '@/core/types';
+import { PlayerActionPanel } from '../ui/PlayerActionPanel';
 
 /** Map CharacterClass to asset name */
 const CLASS_TO_ASSET: Record<CharacterClass, CharacterName> = {
@@ -46,11 +47,13 @@ export class BattleScene {
   private roundText!: Text;
   private logText!: Text;
   private logLines: string[] = [];
+  private actionPanel: PlayerActionPanel;
 
   constructor(app: Application, assetLoader: AssetLoader, battle: BattleManager) {
     this.app = app;
     this.assetLoader = assetLoader;
     this.battle = battle;
+    this.actionPanel = new PlayerActionPanel();
   }
 
   start(): void {
@@ -187,11 +190,21 @@ export class BattleScene {
     g.fill(color);
   }
 
+  /** Get display name for a fighter ID */
+  private nameOf(id: CharacterId): string {
+    try {
+      return this.battle.getFighter(id).displayName;
+    } catch {
+      return id;
+    }
+  }
+
   private subscribeToEvents(): void {
     const events = this.battle.events;
 
     events.on('round-start', (e) => {
-      this.roundText.text = `Round ${e.data.round}`;
+      this.roundText.text = `第 ${e.data.round} 回合`;
+      this.addLog(`--- 第 ${e.data.round} 回合 ---`);
       this.updateAllStats(e.data.fighters);
     });
 
@@ -201,7 +214,7 @@ export class BattleScene {
       if (!entry) return;
 
       if (d.dodged) {
-        this.addLog(`${d.attackerId} → ${d.targetId}: MISS`);
+        this.addLog(`${this.nameOf(d.attackerId)} → ${this.nameOf(d.targetId)}: 闪避!`);
       } else {
         // Play hit animation on target
         entry.sprite.play('hit', false, () => {
@@ -211,8 +224,11 @@ export class BattleScene {
             entry.sprite.play('idle');
           }
         });
-        const dmgLabel = d.isTrueDamage ? `${d.finalDamage.toFixed(0)} TRUE` : `${d.finalDamage.toFixed(0)}`;
-        this.addLog(`→ ${d.targetId}: -${dmgLabel} HP`);
+        const dmgLabel = d.isTrueDamage
+          ? `${d.finalDamage.toFixed(0)} 真实伤害`
+          : `${d.finalDamage.toFixed(0)}`;
+        const condStr = d.conditionMet ? ' [触发条件]' : '';
+        this.addLog(`  → ${this.nameOf(d.targetId)}: -${dmgLabel}${condStr}`);
       }
     });
 
@@ -221,7 +237,7 @@ export class BattleScene {
       if (entry) {
         entry.sprite.play('attack', false, () => entry.sprite.play('idle'));
       }
-      this.addLog(`${e.data.fighterId} 使用 ${e.data.skillName}`);
+      this.addLog(`${this.nameOf(e.data.fighterId)} 使用 ${e.data.skillName}`);
     });
 
     events.on('escape-attempted', (e) => {
@@ -229,7 +245,7 @@ export class BattleScene {
       if (entry) {
         entry.sprite.play('escape', true);
       }
-      this.addLog(`${e.data.fighterId} ${e.data.success ? '逃跑成功' : '逃跑失败'}`);
+      this.addLog(`${this.nameOf(e.data.fighterId)} ${e.data.success ? '逃跑成功!' : '逃跑失败'}`);
     });
 
     events.on('defend-activated', (e) => {
@@ -237,11 +253,15 @@ export class BattleScene {
       if (entry) {
         entry.sprite.play('defense', true);
       }
-      this.addLog(`${e.data.fighterId} 防御`);
+      this.addLog(`${this.nameOf(e.data.fighterId)} 防御 (DEF ${e.data.defBefore.toFixed(1)}→${e.data.defAfter.toFixed(1)})`);
     });
 
     events.on('buff-applied', (e) => {
-      this.addLog(`${e.data.fighterId} 获得 ${e.data.effectApplied?.type ?? '永久增益'}`);
+      const buffName = e.data.effectApplied?.type === 'shield-wall' ? '顶盾'
+        : e.data.effectApplied?.type === 'counter-shock' ? '反震'
+        : e.data.whipPermanent ? '马鞭加速'
+        : '增益';
+      this.addLog(`${this.nameOf(e.data.fighterId)} 激活 ${buffName}`);
     });
 
     events.on('fighter-died', (e) => {
@@ -250,7 +270,7 @@ export class BattleScene {
         entry.sprite.play('death', false);
         entry.label.style.fill = 0x666666;
       }
-      this.addLog(`*** ${e.data.fighterId} 阵亡 ***`);
+      this.addLog(`★ ${this.nameOf(e.data.fighterId)} 阵亡!`);
     });
 
     events.on('round-end', (e) => {
@@ -267,24 +287,36 @@ export class BattleScene {
       const winner = e.data.winner;
       if (winner === 'draw') {
         this.addLog(`\n=== 平局! (${e.data.rounds} 回合) ===`);
-      } else {
-        this.addLog(`\n=== ${winner} 获胜! (${e.data.rounds} 回合) ===`);
+      } else if (winner) {
+        this.addLog(`\n=== ${this.nameOf(winner)} 获胜! (${e.data.rounds} 回合) ===`);
       }
     });
   }
 
   /**
-   * Run the battle automatically with delays between phases
-   * so animations have time to play. In M2 this is simplified —
-   * all actions run with a short timer. M3 will add proper sequencing.
+   * Run the battle with player interaction.
+   * Pauses at round-start to let the player choose an action,
+   * then auto-advances all other phases with delays for animations.
    */
   private runAutoBattle(): void {
     const phaseDelay = 300; // ms between phases
     const roundDelay = 800; // ms between rounds
 
-    const step = () => {
+    const step = async () => {
       const state = this.battle.getState();
       if (state.phase === 'battle-end') return;
+
+      // Before advancing from round-start → action-select,
+      // prompt the player to choose their action
+      if (state.phase === 'round-start') {
+        const player = this.battle.getPlayerFighter();
+        if (player) {
+          const available = this.battle.getAvailableActions(player.id);
+          const enemies = this.battle.getAliveFighters().filter(f => f.id !== player.id);
+          const action = await this.actionPanel.promptAction(player, available, enemies);
+          this.battle.submitPlayerAction(player.id, action);
+        }
+      }
 
       this.battle.advancePhase();
 
