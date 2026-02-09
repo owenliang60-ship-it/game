@@ -1,7 +1,12 @@
 import { Application } from 'pixi.js';
 import { AssetLoader } from './game/AssetLoader';
 import { BattleScene } from './game/scenes/BattleScene';
-import { BattleManager } from './core/BattleManager';
+import { TitleScene } from './game/scenes/TitleScene';
+import { PlayerCountScene } from './game/scenes/PlayerCountScene';
+import { CharSelectScene } from './game/scenes/CharSelectScene';
+import { ResultScene } from './game/scenes/ResultScene';
+import { SceneManager } from './game/SceneManager';
+import { TweenManager } from './game/animation/TweenManager';
 
 /** Game canvas dimensions (16:9 aspect ratio) */
 const GAME_WIDTH = 960;
@@ -36,24 +41,30 @@ async function main() {
   window.addEventListener('resize', resize);
   resize();
 
+  // Initialize animation system
+  TweenManager.init(app.ticker);
+
   // Load character assets
   const assetLoader = new AssetLoader();
   await assetLoader.loadAll();
 
-  // Create battle with 3 fighters (M2: all AI-controlled)
-  const battle = new BattleManager({
-    fighters: [
-      { characterClass: 'knight', isPlayer: true, displayName: '骑士 (你)' },
-      { characterClass: 'armored-warrior', isPlayer: false, displayName: '装甲战士' },
-      { characterClass: 'archer', isPlayer: false, displayName: '弓箭手' },
-    ],
-    aiDifficulty: 'normal',
+  // Initialize scene manager
+  const sceneManager = new SceneManager(app);
+
+  // Register all scenes
+  sceneManager.register('title', new TitleScene(app, sceneManager, assetLoader));
+  sceneManager.register('playerCount', new PlayerCountScene(app, sceneManager));
+  sceneManager.register('charSelect', new CharSelectScene(app, sceneManager, assetLoader));
+  sceneManager.register('battle', new BattleScene(app, assetLoader, sceneManager));
+  sceneManager.register('result', new ResultScene(app, sceneManager, assetLoader));
+
+  // Update scenes each frame
+  app.ticker.add((tick) => {
+    sceneManager.update(tick.deltaMS);
   });
 
-  // Start battle scene
-  const battleScene = new BattleScene(app, assetLoader, battle);
-  app.stage.addChild(battleScene.container);
-  battleScene.start();
+  // Start from title screen
+  await sceneManager.goTo('title');
 }
 
 main().catch(console.error);

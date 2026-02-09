@@ -1,11 +1,19 @@
-import { Application, Container, Text, TextStyle, Graphics } from 'pixi.js';
+import { Application, Container, Graphics } from 'pixi.js';
 import type { AssetLoader } from '../AssetLoader';
 import type { CharacterName } from '../AssetLoader';
 import { CharacterSprite } from '../entities/CharacterSprite';
-import type { Direction, AnimationState } from '../entities/CharacterSprite';
+import type { Direction } from '../entities/CharacterSprite';
 import { BattleManager } from '@/core/BattleManager';
-import type { BattleConfig, CharacterId, CharacterClass, FighterSnapshot } from '@/core/types';
-import { PlayerActionPanel } from '../ui/PlayerActionPanel';
+import type { CharacterId, CharacterClass, FighterSnapshot } from '@/core/types';
+import { ActionPanel } from '../ui/ActionPanel';
+import { BaseScene } from './BaseScene';
+import { RoundInfoBar } from '../ui/RoundInfoBar';
+import { BattleLog } from '../ui/BattleLog';
+import { FighterHUD } from '../ui/FighterHUD';
+import { BattleDirector } from '../BattleDirector';
+import { EffectsManager } from '../effects/EffectsManager';
+import { BattlefieldBackground } from './BattlefieldBackground';
+import type { SceneManager } from '../SceneManager';
 
 /** Map CharacterClass to asset name */
 const CLASS_TO_ASSET: Record<CharacterClass, CharacterName> = {
@@ -14,57 +22,96 @@ const CLASS_TO_ASSET: Record<CharacterClass, CharacterName> = {
   'archer': 'archer',
 };
 
-/** Map CharacterClass to Chinese display name */
-const CLASS_TO_LABEL: Record<CharacterClass, string> = {
-  'knight': '骑士',
-  'armored-warrior': '装甲战士',
-  'archer': '弓箭手',
-};
-
 interface SpriteEntry {
   sprite: CharacterSprite;
-  label: Text;
-  hpBar: Graphics;
-  hpText: Text;
+  hud: FighterHUD;
   fighterId: CharacterId;
+  baseX: number;
+  baseY: number;
 }
 
 /**
  * Battle scene: subscribes to BattleManager events and drives sprite animations.
- * Layout adapts based on fighter count:
- *   2 players: left-right (East vs West)
- *   3+ players: triangular (player bottom N, opponents top S)
+ * Layout (960x540):
+ *   TopBar:      y=0-36
+ *   Arena:       y=36-375 (fighters)
+ *   BottomPanel: y=375-540 (ActionPanel left + BattleLog right)
  */
-export class BattleScene {
-  readonly container = new Container();
-  private app: Application;
+export class BattleScene extends BaseScene {
   private assetLoader: AssetLoader;
-  private battle: BattleManager;
+  private sceneManager: SceneManager;
+  private battle!: BattleManager;
   private sprites = new Map<CharacterId, SpriteEntry>();
-  private lastTime = 0;
 
-  // UI elements
-  private roundText!: Text;
-  private logText!: Text;
-  private logLines: string[] = [];
-  private actionPanel: PlayerActionPanel;
+  // UI components
+  private roundInfoBar!: RoundInfoBar;
+  private battleLog!: BattleLog;
+  private actionPanel: ActionPanel;
+  private effects!: EffectsManager;
+  private director!: BattleDirector;
 
-  constructor(app: Application, assetLoader: AssetLoader, battle: BattleManager) {
-    this.app = app;
+  constructor(app: Application, assetLoader: AssetLoader, sceneManager: SceneManager) {
+    super(app);
     this.assetLoader = assetLoader;
-    this.battle = battle;
-    this.actionPanel = new PlayerActionPanel();
+    this.sceneManager = sceneManager;
+    this.actionPanel = new ActionPanel();
   }
 
-  start(): void {
+  onEnter(data?: Record<string, unknown>): void {
+    const config = (data?.battleConfig as any) ?? {
+      fighters: [
+        { characterClass: 'knight', isPlayer: true, displayName: '骑士 (你)' },
+        { characterClass: 'armored-warrior', isPlayer: false, displayName: '装甲战士' },
+        { characterClass: 'archer', isPlayer: false, displayName: '弓箭手' },
+      ],
+      aiDifficulty: 'normal',
+    };
+
+    this.battle = new BattleManager(config);
+    this.sprites.clear();
+    this.container.removeChildren();
+
     this.buildScene();
     this.subscribeToEvents();
-    this.lastTime = performance.now();
-    this.app.ticker.add(() => this.update());
 
-    // Start the battle and run automatically (M2: all AI, no player input yet)
-    this.battle.start();
-    this.runAutoBattle();
+    // Create effects layer and battle director
+    this.effects = new EffectsManager(this.container);
+    this.director = new BattleDirector(this.battle, this, this.actionPanel, this.effects);
+    this.director.run();
+  }
+
+  onExit(): void {
+    this.director?.stop();
+    this.effects?.clear();
+    this.actionPanel.hide();
+    this.sprites.clear();
+  }
+
+  /** Get a sprite entry by fighter ID */
+  getSpriteEntry(id: CharacterId): SpriteEntry | undefined {
+    return this.sprites.get(id);
+  }
+
+  /** Get sprite containers for all alive fighters (for target selection) */
+  getSpriteContainers(): Map<CharacterId, Container> {
+    const map = new Map<CharacterId, Container>();
+    for (const [id, entry] of this.sprites) {
+      // Only include alive fighters
+      try {
+        const fighter = this.battle.getFighter(id);
+        if (fighter.hp > 0) {
+          map.set(id, entry.sprite.container);
+        }
+      } catch {
+        // Fighter not found, skip
+      }
+    }
+    return map;
+  }
+
+  /** Get the battle manager (for BattleDirector) */
+  getBattle(): BattleManager {
+    return this.battle;
   }
 
   private buildScene(): void {
@@ -72,20 +119,16 @@ export class BattleScene {
     const fighters = state.fighters;
     const count = fighters.length;
 
-    // Round info
-    const roundStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 18, fill: 0xffd700 });
-    this.roundText = new Text({ text: 'Round 0', style: roundStyle });
-    this.roundText.anchor.set(0.5, 0);
-    this.roundText.position.set(480, 10);
-    this.container.addChild(this.roundText);
+    // Background (first — behind everything)
+    const bg = new BattlefieldBackground();
+    this.container.addChild(bg);
 
-    // Battle log
-    const logStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 11, fill: 0xcccccc, wordWrap: true, wordWrapWidth: 300 });
-    this.logText = new Text({ text: '', style: logStyle });
-    this.logText.position.set(660, 380);
-    this.container.addChild(this.logText);
+    // Round info bar (top, height 36)
+    this.roundInfoBar = new RoundInfoBar();
+    this.roundInfoBar.setAliveCount(fighters.filter(f => f.alive).length, fighters.length);
+    this.container.addChild(this.roundInfoBar);
 
-    // Calculate positions based on fighter count
+    // Calculate positions based on fighter count (within arena y=36-375)
     const positions = this.calculatePositions(count);
 
     for (let i = 0; i < fighters.length; i++) {
@@ -100,69 +143,74 @@ export class BattleScene {
       charSprite.play('idle');
       this.container.addChild(charSprite.container);
 
-      // Name label
-      const labelStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 13, fill: fighter.isPlayer ? 0x66ff66 : 0xff6666 });
-      const label = new Text({ text: fighter.displayName, style: labelStyle });
-      label.anchor.set(0.5, 0);
-      label.position.set(pos.x, pos.y + 8);
-      this.container.addChild(label);
-
-      // HP bar background
-      const hpBar = new Graphics();
-      this.drawHpBar(hpBar, pos.x, pos.y + 26, fighter.hp / fighter.maxHp);
-      this.container.addChild(hpBar);
-
-      // HP text
-      const hpStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 10, fill: 0xffffff });
-      const hpText = new Text({ text: `${fighter.hp}/${fighter.maxHp}`, style: hpStyle });
-      hpText.anchor.set(0.5, 0);
-      hpText.position.set(pos.x, pos.y + 40);
-      this.container.addChild(hpText);
+      // Fighter HUD (name + resource bars)
+      const hud = new FighterHUD(
+        fighter.displayName,
+        fighter.isPlayer,
+        fighter.maxHp,
+        fighter.maxMp,
+      );
+      hud.position.set(pos.x, pos.y + 8);
+      this.container.addChild(hud);
 
       this.sprites.set(fighter.id, {
         sprite: charSprite,
-        label,
-        hpBar,
-        hpText,
+        hud,
         fighterId: fighter.id,
+        baseX: pos.x,
+        baseY: pos.y,
       });
     }
+
+    // --- Bottom Panel (y=375-540, full width) ---
+    const bottomPanel = new Graphics();
+    bottomPanel.rect(0, 375, 960, 165);
+    bottomPanel.fill({ color: 0x0a0618, alpha: 0.8 });
+    // Gold top border
+    bottomPanel.rect(0, 375, 960, 2);
+    bottomPanel.fill({ color: 0xc8a050, alpha: 0.6 });
+    this.container.addChild(bottomPanel);
+
+    // Action panel (left side of bottom panel)
+    this.actionPanel.position.set(0, 375);
+    this.actionPanel.showAiWaiting();
+    this.container.addChild(this.actionPanel);
+
+    // Battle log (right side of bottom panel)
+    this.battleLog = new BattleLog(280, 160, 10);
+    this.battleLog.position.set(670, 375);
+    this.container.addChild(this.battleLog);
+
+    // Target selector (rendered on top of the scene)
+    this.container.addChild(this.actionPanel.getTargetSelector());
   }
 
-  /**
-   * Calculate sprite positions based on fighter count.
-   * 2 fighters: left-right (East vs West)
-   * 3+ fighters: player bottom (North), opponents top (South)
-   */
   private calculatePositions(count: number): { x: number; y: number; dir: Direction }[] {
     const fighters = this.battle.getState().fighters;
 
     if (count === 2) {
-      // Left-right layout
-      const groundY = 350;
+      // 2-player mode: left vs right within arena
+      const groundY = 250;
       return [
-        { x: 250, y: groundY, dir: 'east' },   // player (left, facing right)
-        { x: 710, y: groundY, dir: 'west' },    // opponent (right, facing left)
+        { x: 250, y: groundY, dir: 'east' },
+        { x: 710, y: groundY, dir: 'west' },
       ];
     }
 
-    // Triangular layout: player at bottom, opponents at top
+    // 3+ players: player at bottom of arena, opponents at top
     const positions: { x: number; y: number; dir: Direction }[] = [];
     const playerIndex = fighters.findIndex(f => f.isPlayer);
 
-    // Opponents at top row
     const opponents = fighters.filter(f => !f.isPlayer);
-    const topY = 180;
+    const topY = 140;
     const topSpacing = Math.min(200, 700 / (opponents.length + 1));
     const topStartX = 480 - (opponents.length - 1) * topSpacing / 2;
 
     let opIdx = 0;
     for (let i = 0; i < fighters.length; i++) {
       if (i === playerIndex) {
-        // Player at bottom center
-        positions.push({ x: 480, y: 420, dir: 'north' });
+        positions.push({ x: 480, y: 320, dir: 'north' });
       } else {
-        // Opponent at top
         positions.push({
           x: topStartX + opIdx * topSpacing,
           y: topY,
@@ -175,22 +223,6 @@ export class BattleScene {
     return positions;
   }
 
-  private drawHpBar(g: Graphics, cx: number, y: number, ratio: number): void {
-    const w = 80;
-    const h = 6;
-    const x = cx - w / 2;
-
-    g.clear();
-    // Background
-    g.rect(x, y, w, h);
-    g.fill(0x333333);
-    // HP fill
-    const color = ratio > 0.5 ? 0x44cc44 : ratio > 0.25 ? 0xcccc44 : 0xcc3333;
-    g.rect(x, y, w * Math.max(0, ratio), h);
-    g.fill(color);
-  }
-
-  /** Get display name for a fighter ID */
   private nameOf(id: CharacterId): string {
     try {
       return this.battle.getFighter(id).displayName;
@@ -203,8 +235,8 @@ export class BattleScene {
     const events = this.battle.events;
 
     events.on('round-start', (e) => {
-      this.roundText.text = `第 ${e.data.round} 回合`;
-      this.addLog(`--- 第 ${e.data.round} 回合 ---`);
+      this.roundInfoBar.setRound(e.data.round);
+      this.battleLog.add(`--- 第 ${e.data.round} 回合 ---`, 'system');
       this.updateAllStats(e.data.fighters);
     });
 
@@ -214,9 +246,8 @@ export class BattleScene {
       if (!entry) return;
 
       if (d.dodged) {
-        this.addLog(`${this.nameOf(d.attackerId)} → ${this.nameOf(d.targetId)}: 闪避!`);
+        this.battleLog.add(`${this.nameOf(d.attackerId)} → ${this.nameOf(d.targetId)}: 闪避!`, 'info');
       } else {
-        // Play hit animation on target
         entry.sprite.play('hit', false, () => {
           if (d.targetDied) {
             entry.sprite.play('death', false);
@@ -228,7 +259,7 @@ export class BattleScene {
           ? `${d.finalDamage.toFixed(0)} 真实伤害`
           : `${d.finalDamage.toFixed(0)}`;
         const condStr = d.conditionMet ? ' [触发条件]' : '';
-        this.addLog(`  → ${this.nameOf(d.targetId)}: -${dmgLabel}${condStr}`);
+        this.battleLog.add(`  → ${this.nameOf(d.targetId)}: -${dmgLabel}${condStr}`, 'damage');
       }
     });
 
@@ -237,7 +268,9 @@ export class BattleScene {
       if (entry) {
         entry.sprite.play('attack', false, () => entry.sprite.play('idle'));
       }
-      this.addLog(`${this.nameOf(e.data.fighterId)} 使用 ${e.data.skillName}`);
+      const fighter = this.battle.getFighter(e.data.fighterId);
+      const logType = fighter.isPlayer ? 'player' : 'enemy';
+      this.battleLog.add(`${this.nameOf(e.data.fighterId)} 使用 ${e.data.skillName}`, logType);
     });
 
     events.on('escape-attempted', (e) => {
@@ -245,7 +278,10 @@ export class BattleScene {
       if (entry) {
         entry.sprite.play('escape', true);
       }
-      this.addLog(`${this.nameOf(e.data.fighterId)} ${e.data.success ? '逃跑成功!' : '逃跑失败'}`);
+      this.battleLog.add(
+        `${this.nameOf(e.data.fighterId)} ${e.data.success ? '逃跑成功!' : '逃跑失败'}`,
+        'info',
+      );
     });
 
     events.on('defend-activated', (e) => {
@@ -253,7 +289,10 @@ export class BattleScene {
       if (entry) {
         entry.sprite.play('defense', true);
       }
-      this.addLog(`${this.nameOf(e.data.fighterId)} 防御 (DEF ${e.data.defBefore.toFixed(1)}→${e.data.defAfter.toFixed(1)})`);
+      this.battleLog.add(
+        `${this.nameOf(e.data.fighterId)} 防御 (DEF ${e.data.defBefore.toFixed(1)}→${e.data.defAfter.toFixed(1)})`,
+        'info',
+      );
     });
 
     events.on('buff-applied', (e) => {
@@ -261,21 +300,23 @@ export class BattleScene {
         : e.data.effectApplied?.type === 'counter-shock' ? '反震'
         : e.data.whipPermanent ? '马鞭加速'
         : '增益';
-      this.addLog(`${this.nameOf(e.data.fighterId)} 激活 ${buffName}`);
+      this.battleLog.add(`${this.nameOf(e.data.fighterId)} 激活 ${buffName}`, 'info');
     });
 
     events.on('fighter-died', (e) => {
       const entry = this.sprites.get(e.data.fighterId);
       if (entry) {
         entry.sprite.play('death', false);
-        entry.label.style.fill = 0x666666;
+        entry.hud.setDead();
       }
-      this.addLog(`★ ${this.nameOf(e.data.fighterId)} 阵亡!`);
+      this.battleLog.add(`★ ${this.nameOf(e.data.fighterId)} 阵亡!`, 'damage');
+      const alive = this.battle.getAliveFighters().length;
+      const total = this.battle.getState().fighters.length;
+      this.roundInfoBar.setAliveCount(alive, total);
     });
 
     events.on('round-end', (e) => {
       this.updateAllStats(e.data.fighters);
-      // Reset alive fighters to idle
       for (const f of e.data.fighters) {
         if (!f.alive) continue;
         const entry = this.sprites.get(f.id);
@@ -285,47 +326,24 @@ export class BattleScene {
 
     events.on('battle-end', (e) => {
       const winner = e.data.winner;
-      if (winner === 'draw') {
-        this.addLog(`\n=== 平局! (${e.data.rounds} 回合) ===`);
+      const isDraw = winner === 'draw';
+      const winnerName = isDraw ? '' : (winner ? this.nameOf(winner) : '???');
+
+      if (isDraw) {
+        this.battleLog.add(`=== 平局! (${e.data.rounds} 回合) ===`, 'system');
       } else if (winner) {
-        this.addLog(`\n=== ${this.nameOf(winner)} 获胜! (${e.data.rounds} 回合) ===`);
+        this.battleLog.add(`=== ${winnerName} 获胜! (${e.data.rounds} 回合) ===`, 'system');
       }
+
+      // Navigate to result scene after a brief pause
+      setTimeout(() => {
+        this.sceneManager.goTo('result', {
+          winner: winnerName,
+          isDraw,
+          rounds: e.data.rounds,
+        });
+      }, 2000);
     });
-  }
-
-  /**
-   * Run the battle with player interaction.
-   * Pauses at round-start to let the player choose an action,
-   * then auto-advances all other phases with delays for animations.
-   */
-  private runAutoBattle(): void {
-    const phaseDelay = 300; // ms between phases
-    const roundDelay = 800; // ms between rounds
-
-    const step = async () => {
-      const state = this.battle.getState();
-      if (state.phase === 'battle-end') return;
-
-      // Before advancing from round-start → action-select,
-      // prompt the player to choose their action
-      if (state.phase === 'round-start') {
-        const player = this.battle.getPlayerFighter();
-        if (player) {
-          const available = this.battle.getAvailableActions(player.id);
-          const enemies = this.battle.getAliveFighters().filter(f => f.id !== player.id);
-          const action = await this.actionPanel.promptAction(player, available, enemies);
-          this.battle.submitPlayerAction(player.id, action);
-        }
-      }
-
-      this.battle.advancePhase();
-
-      const newState = this.battle.getState();
-      const delay = newState.phase === 'round-start' ? roundDelay : phaseDelay;
-      setTimeout(step, delay);
-    };
-
-    setTimeout(step, 500); // Initial delay
   }
 
   private updateAllStats(fighters: FighterSnapshot[]): void {
@@ -333,28 +351,15 @@ export class BattleScene {
       const entry = this.sprites.get(f.id);
       if (!entry) continue;
 
-      const maxHp = this.battle.getFighter(f.id).maxHp;
-      const ratio = Math.max(0, f.hp) / maxHp;
-      const pos = entry.sprite.container.position;
-
-      this.drawHpBar(entry.hpBar, pos.x, pos.y + 26, ratio);
-      entry.hpText.text = `${Math.max(0, Math.round(f.hp))}/${maxHp}`;
+      const fighter = this.battle.getFighter(f.id);
+      entry.hud.updateResources(f.hp, fighter.maxHp, f.mp, fighter.maxMp, f.rage);
     }
   }
 
-  private addLog(line: string): void {
-    this.logLines.push(line);
-    if (this.logLines.length > 12) this.logLines.shift();
-    this.logText.text = this.logLines.join('\n');
-  }
-
-  private update(): void {
-    const now = performance.now();
-    const deltaMs = now - this.lastTime;
-    this.lastTime = now;
-
+  override update(deltaMs: number): void {
     for (const entry of this.sprites.values()) {
       entry.sprite.update(deltaMs);
+      entry.hud.updateBlink(deltaMs);
     }
   }
 }
