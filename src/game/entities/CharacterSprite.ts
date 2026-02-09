@@ -1,5 +1,7 @@
 import { Container, Sprite, Texture } from 'pixi.js';
 import type { CharacterAssets } from '../AssetLoader';
+import { TweenManager } from '../animation/TweenManager';
+import { Easing } from '../animation/Easing';
 
 export type Direction = 'south' | 'west' | 'north' | 'east';
 export type AnimationState = 'idle' | 'attack' | 'hit' | 'death' | 'run' | 'defense' | 'escape' | 'idle-alt';
@@ -25,6 +27,10 @@ export class CharacterSprite {
   /** Display scale for pixel art (nearest neighbor) */
   private displayScale: number;
 
+  /** Original position for returning after lunge */
+  private _baseX = 0;
+  private _baseY = 0;
+
   constructor(assets: CharacterAssets, scale = 2) {
     this.assets = assets;
     this.displayScale = scale;
@@ -43,6 +49,9 @@ export class CharacterSprite {
   get state(): AnimationState {
     return this.currentState;
   }
+
+  get baseX(): number { return this._baseX; }
+  get baseY(): number { return this._baseY; }
 
   setDirection(dir: Direction) {
     this.currentDirection = dir;
@@ -66,6 +75,16 @@ export class CharacterSprite {
     this.updateTexture();
   }
 
+  /**
+   * Play an animation and return a Promise that resolves when it completes.
+   * Always non-looping.
+   */
+  playAsync(state: AnimationState): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.play(state, false, resolve);
+    });
+  }
+
   /** Stop animation, show current frame */
   stop() {
     this.playing = false;
@@ -80,6 +99,77 @@ export class CharacterSprite {
       this.frameTimer -= this.frameDuration;
       this.advanceFrame();
     }
+  }
+
+  /** Set position (bottom-center anchor) */
+  setPosition(x: number, y: number) {
+    this.container.position.set(x, y);
+    this._baseX = x;
+    this._baseY = y;
+  }
+
+  /**
+   * Lunge toward a target position (for melee attacks).
+   * Moves partway toward target then returns.
+   */
+  async lungeToward(targetX: number, targetY: number): Promise<void> {
+    const pos = this.container.position;
+    const dx = targetX - pos.x;
+    const dy = targetY - pos.y;
+    // Move 40% of the distance toward target
+    const lungeX = pos.x + dx * 0.4;
+    const lungeY = pos.y + dy * 0.4;
+
+    await TweenManager.add({
+      target: pos,
+      props: { x: lungeX, y: lungeY },
+      duration: 150,
+      easing: Easing.easeOutQuad,
+    });
+  }
+
+  /** Return to base position after lunge */
+  async returnToBase(): Promise<void> {
+    await TweenManager.add({
+      target: this.container.position,
+      props: { x: this._baseX, y: this._baseY },
+      duration: 200,
+      easing: Easing.easeOutBack,
+    });
+  }
+
+  /** Shake the sprite (for hit reactions) */
+  async shake(intensity = 4, duration = 200): Promise<void> {
+    const pos = this.container.position;
+    const startX = pos.x;
+    const steps = 4;
+    const stepDuration = duration / steps;
+
+    for (let i = 0; i < steps; i++) {
+      const offsetX = (i % 2 === 0 ? 1 : -1) * intensity;
+      await TweenManager.add({
+        target: pos,
+        props: { x: startX + offsetX },
+        duration: stepDuration,
+        easing: Easing.linear,
+      });
+    }
+    // Return to exact position
+    await TweenManager.add({
+      target: pos,
+      props: { x: startX },
+      duration: stepDuration,
+      easing: Easing.linear,
+    });
+  }
+
+  /** Flash white (for hit feedback) */
+  async flashWhite(duration = 150): Promise<void> {
+    this.sprite.tint = 0xFFFFFF;
+    this.sprite.alpha = 0.5;
+    await new Promise(resolve => setTimeout(resolve, duration));
+    this.sprite.tint = 0xFFFFFF;
+    this.sprite.alpha = 1;
   }
 
   private advanceFrame() {
@@ -118,10 +208,5 @@ export class CharacterSprite {
         this.sprite.texture = rotation;
       }
     }
-  }
-
-  /** Set position (bottom-center anchor) */
-  setPosition(x: number, y: number) {
-    this.container.position.set(x, y);
   }
 }
