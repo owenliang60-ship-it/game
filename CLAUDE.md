@@ -1,6 +1,6 @@
 # 口头对战游戏 - 项目上下文
 
-> 这是一个30天游戏开发项目，目标是在2025-03-01发布1.0版本
+> 这是一个30天游戏开发项目，目标是在2026-03-01发布1.0版本
 
 ---
 
@@ -48,15 +48,15 @@
 
 | 文档 | 路径 | 说明 |
 |------|------|------|
-| 游戏逻辑PRD | `docs/GAME_LOGIC_PRD.md` | 完整游戏规则定义 |
+| 游戏逻辑PRD | `docs/GAME_LOGIC_PRD.md` | 完整游戏规则定义 (v0.9.1) |
 | 项目计划 | `docs/PROJECT_PLAN.md` | 30天计划+里程碑 |
-| 游戏设计 | `docs/GAME_DESIGN.md` | 角色和技能设计概览 |
+| 历史文档 | `docs/archive/` | 已归档（设计、审计、模拟报告等） |
 
 ---
 
 ## 当前进度
 
-**Day 1** (2025-01-30): 项目规划 + PRD初稿 ✅
+**Day 1** (2026-01-30): 项目规划 + PRD初稿 ✅
 **Day 2** (2026-02-01): PRD完善至v0.8 + 规则审计 ✅
 **Day 3** (2026-02-03): 三人战斗模拟测试 + AI策略设计 ✅
 **Day 4** (2026-02-05): 模拟报告遗留问题确认 + PixelLab配置 ✅
@@ -65,38 +65,23 @@
 **Day 7-8** (2026-02-07~08): UI设计原型 + 第三方审计 + 文档修复 ✅
 **Day 9** (2026-02-08): M2战斗引擎完成（18文件，2832行） ✅
 **Day 10** (2026-02-09): M2浏览器验证通过，里程碑完成 ✅
+**Day 11** (2026-02-09): M3完成 — UI+特效+完整游戏流程+战斗UI重做 ✅
 
 **已完成**:
-- [x] 确定项目目标和30天计划
-- [x] 头脑风暴确定技术方案
-- [x] 创建游戏逻辑PRD v0.1
-- [x] 创建项目计划 v0.2
-- [x] 确认5个核心规则问题
-- [x] 规则审计（subagent审查）
-- [x] PRD更新至v0.8，通过审计
-- [x] 三人战斗模拟测试 + 平衡性报告
-- [x] AI策略设计框架
-- [x] 模拟报告8个遗留问题全部确认，PRD更新至v0.9
-- [x] PixelLab MCP 配置完成
-- [x] 3个角色素材生成（PixelLab，立绘+动画）
-- [x] 4方向素材整理（96/96方向全填满）
-- [x] VFX素材需求清单（6个精灵+16种代码特效）
-- [x] PixiJS + Vite + TypeScript 项目初始化
-- [x] M1 里程碑完成
-- [x] UI设计原型 v2（HTML，5画面，暖金中式仙侠风）
-- [x] 第三方审计通过（15问题，3严重已修复）
-- [x] PRD v0.9.1（反震时序+平局规则+HP消耗时机）
-- [x] M2 战斗引擎完成：types + EventBus + 18技能定义 + 3角色定义 + DamageCalculator + ActionResolver + StatusEffectManager + BattleFactory + AIPlayer(softmax) + BattleManager(状态机) + console测试 + BattleScene(事件驱动) + main.ts
-- [x] 5局console对战测试通过，伤害公式验证正确
-- [x] typecheck + build 通过
-- [x] M2 浏览器验证通过：精灵显示+idle动画+HP条+战斗日志+玩家操作面板+攻击/受击动画+战斗结束
-- [x] PlayerActionPanel（DOM）：技能选择+目标选择+状态栏
-- [x] BattleScene 中文战斗日志（技能名、闪避、真实伤害、触发条件等）
-- [x] M2 里程碑完成
+- [x] M1: PRD v0.9.1 + 3角色素材 + PixiJS框架 + UI原型 + 审计
+- [x] M2: 战斗引擎（18文件，2832行）+ 浏览器验证
+- [x] M3: 交互界面+动画+特效+完整游戏流程（38文件，4053行新增）
+  - Tween动画系统 + SceneManager (fade转场)
+  - 战斗UI: ResourceBars, FighterHUD, RoundInfoBar, BattleLog(每行着色)
+  - PixiJS ActionPanel (固定底部面板, 技能按钮, 点击精灵选目标)
+  - BattleDirector async/await编排 + 技能名称浮动标签
+  - P0+P1特效: 伤害飘字/斩击/箭矢/防御/顶盾/反震/箭雨/死亡/冲锋/马鞭
+  - 战场背景 + 5个完整场景 (Title→PlayerCount→CharSelect→Battle→Result)
 
 **下次继续**:
-1. 进入 M3：交互界面 + 动画特效 + 战场背景图
-2. 平衡性微调（骑士胜率偏高）
+1. M4: 测试 + 打磨 + UI美化 + 部署发布
+2. UI视觉提升（当前UI功能完整但美感不足）
+3. 平衡性微调（骑士胜率偏高）
 
 ---
 
@@ -106,8 +91,29 @@
 |--------|------|------|
 | M1: PRD+素材+框架 | Day 7 | ✅ 完成 |
 | M2: 战斗系统+基础画面 | Day 14 | ✅ Day 10 完成（提前4天） |
-| M3: 交互界面+动画+特效 | Day 21 | 待开始 |
+| M3: 交互界面+动画+特效 | Day 21 | ✅ Day 11 完成（提前10天） |
 | M4: 1.0版本发布 | Day 30 | 待开始 |
+
+---
+
+## 技术架构
+
+```
+src/
+├── core/           # 纯逻辑层（无PixiJS依赖）
+│   ├── types.ts, BattleManager.ts, ActionResolver.ts
+│   ├── DamageCalculator.ts, StatusEffectManager.ts
+│   └── EventBus.ts, AIPlayer.ts, BattleFactory.ts
+├── skills/         # 18个技能定义
+├── characters/     # 3角色属性定义
+└── game/           # PixiJS渲染层
+    ├── AssetLoader.ts, SceneManager.ts, BattleDirector.ts
+    ├── entities/CharacterSprite.ts
+    ├── scenes/     # 5个场景
+    ├── ui/         # UI组件 (ActionPanel, BattleLog, FighterHUD等)
+    ├── effects/    # 11个特效类
+    └── animation/  # Tween系统
+```
 
 ---
 
@@ -115,15 +121,11 @@
 
 **版本**: v0.9.1 | **状态**: 战斗引擎已实现，规则完备 ✅
 
-所有待确认问题已解决，详见 `docs/GAME_LOGIC_PRD.md` 第九章。
-
 ---
 
 ## 快速开始下次对话
 
-下次对话时，可以说：
-
-> "继续游戏项目，我们从PRD待确认问题开始"
+> "继续游戏项目，开始M4"
 
 或
 
