@@ -2,6 +2,7 @@ import { Container, Text, TextStyle, Graphics } from 'pixi.js';
 
 /**
  * Top bar showing round number and alive fighter count.
+ * Height: 36px, VT323 fonts, gold inner border decoration.
  */
 export class RoundInfoBar extends Container {
   private roundText: Text;
@@ -13,31 +14,34 @@ export class RoundInfoBar extends Container {
 
     // Semi-transparent background strip
     this.bg = new Graphics();
-    this.bg.rect(0, 0, 960, 32);
-    this.bg.fill({ color: 0x000000, alpha: 0.4 });
+    this.bg.rect(0, 0, 960, 36);
+    this.bg.fill({ color: 0x000000, alpha: 0.45 });
+    // Gold inner border at bottom
+    this.bg.rect(4, 34, 952, 1);
+    this.bg.fill({ color: 0xc8a050, alpha: 0.35 });
     this.addChild(this.bg);
 
     // Round number (center)
     const roundStyle = new TextStyle({
-      fontFamily: '"Microsoft YaHei", monospace',
-      fontSize: 16,
+      fontFamily: '"VT323", "Microsoft YaHei", monospace',
+      fontSize: 18,
       fill: 0xFFD700,
       fontWeight: 'bold',
     });
     this.roundText = new Text({ text: '第 1 回合', style: roundStyle });
     this.roundText.anchor.set(0.5, 0.5);
-    this.roundText.position.set(480, 16);
+    this.roundText.position.set(480, 18);
     this.addChild(this.roundText);
 
     // Alive count (right side)
     const aliveStyle = new TextStyle({
-      fontFamily: '"Microsoft YaHei", monospace',
-      fontSize: 12,
+      fontFamily: '"VT323", "Microsoft YaHei", monospace',
+      fontSize: 14,
       fill: 0xCCCCCC,
     });
     this.aliveText = new Text({ text: '存活: 3', style: aliveStyle });
     this.aliveText.anchor.set(1, 0.5);
-    this.aliveText.position.set(940, 16);
+    this.aliveText.position.set(940, 18);
     this.addChild(this.aliveText);
   }
 

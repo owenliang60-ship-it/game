@@ -2,18 +2,15 @@ import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { SkillButton } from './SkillButton';
 import { Button } from './Button';
 import { TargetSelector } from './TargetSelector';
-import { TweenManager } from '../animation/TweenManager';
-import { Easing } from '../animation/Easing';
 import type { AvailableAction, CharacterId, ChosenAction, Fighter } from '@/core/types';
 import { getSkill } from '@/skills';
 
-const PANEL_Y_HIDDEN = 540;
-const PANEL_Y_VISIBLE = 385;
 const PANEL_HEIGHT = 155;
+const PANEL_WIDTH = 660;
 
 /**
  * PixiJS-native action panel: skill selection + target selection.
- * Slides in from the bottom when it's the player's turn.
+ * Fixed at the bottom-left of the battle scene (no slide animation).
  */
 export class ActionPanel extends Container {
   private bg: Graphics;
@@ -22,21 +19,22 @@ export class ActionPanel extends Container {
   private buttonContainer: Container;
   private targetSelector: TargetSelector;
   private resolveAction: ((action: ChosenAction) => void) | null = null;
-  private currentSkillId: string | null = null;
+  private positionMap = new Map<CharacterId, { x: number; y: number }>();
+  private spriteContainers = new Map<CharacterId, Container>();
 
   // Status bar elements
   private statusContainer: Container;
 
+  // AI waiting text
+  private aiWaitText: Text;
+
   constructor() {
     super();
-    this.position.y = PANEL_Y_HIDDEN;
 
-    // Background
+    // Background (left portion of bottom panel)
     this.bg = new Graphics();
-    this.bg.rect(0, 0, 960, PANEL_HEIGHT);
+    this.bg.rect(0, 0, PANEL_WIDTH, PANEL_HEIGHT);
     this.bg.fill({ color: 0x0e0820, alpha: 0.92 });
-    this.bg.rect(0, 0, 960, 2);
-    this.bg.fill(0xc8a050);
     this.addChild(this.bg);
 
     // Status bar at top of panel
@@ -52,11 +50,38 @@ export class ActionPanel extends Container {
     // Target selector (managed externally, rendered above the panel)
     this.targetSelector = new TargetSelector();
     this.targetSelector.visible = false;
+
+    // AI waiting text (shown when it's not the player's turn)
+    this.aiWaitText = new Text({
+      text: 'AI 行动中...',
+      style: new TextStyle({
+        fontFamily: '"VT323", "Microsoft YaHei", monospace',
+        fontSize: 16,
+        fill: 0x888888,
+      }),
+    });
+    this.aiWaitText.anchor.set(0.5, 0.5);
+    this.aiWaitText.position.set(PANEL_WIDTH / 2, PANEL_HEIGHT / 2);
+    this.aiWaitText.visible = false;
+    this.addChild(this.aiWaitText);
   }
 
   /** Get the target selector to add to the scene container */
   getTargetSelector(): TargetSelector {
     return this.targetSelector;
+  }
+
+  /** Show AI waiting state */
+  showAiWaiting(): void {
+    this.buttonContainer.visible = false;
+    this.statusContainer.visible = false;
+    this.aiWaitText.visible = true;
+    this.visible = true;
+  }
+
+  /** Hide AI waiting state */
+  hideAiWaiting(): void {
+    this.aiWaitText.visible = false;
   }
 
   /**
@@ -66,10 +91,19 @@ export class ActionPanel extends Container {
     player: Readonly<Fighter>,
     availableActions: AvailableAction[],
     enemies: Readonly<Fighter>[],
+    positions?: Map<CharacterId, { x: number; y: number }>,
+    sprites?: Map<CharacterId, Container>,
   ): Promise<ChosenAction> {
+    if (positions) this.positionMap = positions;
+    if (sprites) this.spriteContainers = sprites;
+
+    this.aiWaitText.visible = false;
+    this.buttonContainer.visible = true;
+    this.statusContainer.visible = true;
+
     this.buildButtons(player, availableActions, enemies);
     this.buildStatusBar(player);
-    await this.slideIn();
+    this.visible = true;
 
     return new Promise<ChosenAction>((resolve) => {
       this.resolveAction = resolve;
@@ -148,7 +182,7 @@ export class ActionPanel extends Container {
     // Skill buttons (grid to the right)
     const skillActions = actions.filter(a => a.type === 'skill');
     const cols = 4;
-    const btnW = 140;
+    const btnW = 120;
     const btnH = 40;
     const gapX = 6;
     const gapY = 6;
@@ -226,49 +260,32 @@ export class ActionPanel extends Container {
   }
 
   private async pickTargets(enemies: Readonly<Fighter>[], maxTargets: number): Promise<CharacterId[]> {
-    const targets = enemies.map(e => ({
-      id: e.id,
-      name: e.displayName,
-      hp: e.hp,
-      maxHp: e.maxHp,
-      x: 0, // Will be set from sprite positions
-      y: 0,
-    }));
+    const targets = enemies.map(e => {
+      const pos = this.positionMap.get(e.id);
+      return {
+        id: e.id,
+        name: e.displayName,
+        hp: e.hp,
+        maxHp: e.maxHp,
+        x: pos?.x ?? 480,
+        y: pos?.y ?? 200,
+      };
+    });
 
-    // Use target selector (positions are relative to scene, not panel)
-    return this.targetSelector.show(targets, maxTargets);
+    return this.targetSelector.show(targets, maxTargets, this.spriteContainers);
   }
 
-  private async submitAction(action: ChosenAction): Promise<void> {
+  private submitAction(action: ChosenAction): void {
     this.targetSelector.hide();
-    await this.slideOut();
+    this.buttonContainer.visible = false;
+    this.statusContainer.visible = false;
+    this.showAiWaiting();
     this.resolveAction?.(action);
     this.resolveAction = null;
   }
 
-  private async slideIn(): Promise<void> {
-    this.visible = true;
-    await TweenManager.add({
-      target: this.position,
-      props: { y: PANEL_Y_VISIBLE },
-      duration: 250,
-      easing: Easing.easeOutCubic,
-    });
-  }
-
-  private async slideOut(): Promise<void> {
-    await TweenManager.add({
-      target: this.position,
-      props: { y: PANEL_Y_HIDDEN },
-      duration: 200,
-      easing: Easing.easeInQuad,
-    });
-    this.visible = false;
-  }
-
   hide(): void {
     this.visible = false;
-    this.position.y = PANEL_Y_HIDDEN;
     this.targetSelector.hide();
   }
 }

@@ -52,11 +52,11 @@ async function main() {
   const sceneManager = new SceneManager(app);
 
   // Register all scenes
-  sceneManager.register('title', new TitleScene(app, sceneManager));
+  sceneManager.register('title', new TitleScene(app, sceneManager, assetLoader));
   sceneManager.register('playerCount', new PlayerCountScene(app, sceneManager));
-  sceneManager.register('charSelect', new CharSelectScene(app, sceneManager));
+  sceneManager.register('charSelect', new CharSelectScene(app, sceneManager, assetLoader));
   sceneManager.register('battle', new BattleScene(app, assetLoader, sceneManager));
-  sceneManager.register('result', new ResultScene(app, sceneManager));
+  sceneManager.register('result', new ResultScene(app, sceneManager, assetLoader));
 
   // Update scenes each frame
   app.ticker.add((tick) => {

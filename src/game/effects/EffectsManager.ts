@@ -1,4 +1,4 @@
-import { Container } from 'pixi.js';
+import { Container, Text, TextStyle } from 'pixi.js';
 import { DamageNumber, type DamageType } from './DamageNumber';
 import { HitFlash } from './HitFlash';
 import { SlashEffect } from './SlashEffect';
@@ -10,6 +10,8 @@ import { ArrowRainEffect } from './ArrowRainEffect';
 import { DeathEffect } from './DeathEffect';
 import { ChargeEffect } from './ChargeEffect';
 import { WhipAuraEffect } from './WhipAuraEffect';
+import { TweenManager } from '../animation/TweenManager';
+import { Easing } from '../animation/Easing';
 
 /**
  * Factory + manager for all visual effects.
@@ -137,6 +139,43 @@ export class EffectsManager {
     this.layer.addChild(aura);
     aura.show();
     return aura;
+  }
+
+  /** Skill label floating above a character */
+  showSkillLabel(x: number, y: number, skillName: string, isPlayer: boolean): void {
+    const color = isPlayer ? 0xFFD700 : 0x8899BB;
+    const label = new Text({
+      text: skillName,
+      style: new TextStyle({
+        fontFamily: '"VT323", "Microsoft YaHei", monospace',
+        fontSize: 16,
+        fill: color,
+        fontWeight: 'bold',
+      }),
+    });
+    label.anchor.set(0.5, 1);
+    label.position.set(x, y - 50);
+    this.layer.addChild(label);
+
+    // Float upward
+    TweenManager.add({
+      target: label.position,
+      props: { y: y - 70 },
+      duration: 1200,
+      easing: Easing.easeOutQuad,
+    });
+
+    // Fade out after a delay
+    TweenManager.add({
+      target: label,
+      props: { alpha: 0 },
+      duration: 400,
+      delay: 800,
+      easing: Easing.easeInQuad,
+    }).then(() => {
+      this.layer.removeChild(label);
+      label.destroy();
+    });
   }
 
   /** Clear all effects */

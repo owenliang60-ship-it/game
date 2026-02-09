@@ -1,10 +1,10 @@
-import { Application, Container, Text, TextStyle, Graphics } from 'pixi.js';
+import { Application, Container, Graphics } from 'pixi.js';
 import type { AssetLoader } from '../AssetLoader';
 import type { CharacterName } from '../AssetLoader';
 import { CharacterSprite } from '../entities/CharacterSprite';
-import type { Direction, AnimationState } from '../entities/CharacterSprite';
+import type { Direction } from '../entities/CharacterSprite';
 import { BattleManager } from '@/core/BattleManager';
-import type { BattleConfig, CharacterId, CharacterClass, FighterSnapshot } from '@/core/types';
+import type { CharacterId, CharacterClass, FighterSnapshot } from '@/core/types';
 import { ActionPanel } from '../ui/ActionPanel';
 import { BaseScene } from './BaseScene';
 import { RoundInfoBar } from '../ui/RoundInfoBar';
@@ -32,9 +32,10 @@ interface SpriteEntry {
 
 /**
  * Battle scene: subscribes to BattleManager events and drives sprite animations.
- * Layout adapts based on fighter count:
- *   2 players: left-right (East vs West)
- *   3+ players: triangular (player bottom N, opponents top S)
+ * Layout (960x540):
+ *   TopBar:      y=0-36
+ *   Arena:       y=36-375 (fighters)
+ *   BottomPanel: y=375-540 (ActionPanel left + BattleLog right)
  */
 export class BattleScene extends BaseScene {
   private assetLoader: AssetLoader;
@@ -91,6 +92,23 @@ export class BattleScene extends BaseScene {
     return this.sprites.get(id);
   }
 
+  /** Get sprite containers for all alive fighters (for target selection) */
+  getSpriteContainers(): Map<CharacterId, Container> {
+    const map = new Map<CharacterId, Container>();
+    for (const [id, entry] of this.sprites) {
+      // Only include alive fighters
+      try {
+        const fighter = this.battle.getFighter(id);
+        if (fighter.hp > 0) {
+          map.set(id, entry.sprite.container);
+        }
+      } catch {
+        // Fighter not found, skip
+      }
+    }
+    return map;
+  }
+
   /** Get the battle manager (for BattleDirector) */
   getBattle(): BattleManager {
     return this.battle;
@@ -105,12 +123,12 @@ export class BattleScene extends BaseScene {
     const bg = new BattlefieldBackground();
     this.container.addChild(bg);
 
-    // Round info bar (top)
+    // Round info bar (top, height 36)
     this.roundInfoBar = new RoundInfoBar();
     this.roundInfoBar.setAliveCount(fighters.filter(f => f.alive).length, fighters.length);
     this.container.addChild(this.roundInfoBar);
 
-    // Calculate positions based on fighter count
+    // Calculate positions based on fighter count (within arena y=36-375)
     const positions = this.calculatePositions(count);
 
     for (let i = 0; i < fighters.length; i++) {
@@ -144,13 +162,24 @@ export class BattleScene extends BaseScene {
       });
     }
 
-    // Battle log (bottom right)
-    this.battleLog = new BattleLog(280, 150, 12);
-    this.battleLog.position.set(660, 375);
-    this.container.addChild(this.battleLog);
+    // --- Bottom Panel (y=375-540, full width) ---
+    const bottomPanel = new Graphics();
+    bottomPanel.rect(0, 375, 960, 165);
+    bottomPanel.fill({ color: 0x0a0618, alpha: 0.8 });
+    // Gold top border
+    bottomPanel.rect(0, 375, 960, 2);
+    bottomPanel.fill({ color: 0xc8a050, alpha: 0.6 });
+    this.container.addChild(bottomPanel);
 
-    // Action panel (PixiJS, slides from bottom)
+    // Action panel (left side of bottom panel)
+    this.actionPanel.position.set(0, 375);
+    this.actionPanel.showAiWaiting();
     this.container.addChild(this.actionPanel);
+
+    // Battle log (right side of bottom panel)
+    this.battleLog = new BattleLog(280, 160, 10);
+    this.battleLog.position.set(670, 375);
+    this.container.addChild(this.battleLog);
 
     // Target selector (rendered on top of the scene)
     this.container.addChild(this.actionPanel.getTargetSelector());
@@ -160,25 +189,27 @@ export class BattleScene extends BaseScene {
     const fighters = this.battle.getState().fighters;
 
     if (count === 2) {
-      const groundY = 350;
+      // 2-player mode: left vs right within arena
+      const groundY = 250;
       return [
         { x: 250, y: groundY, dir: 'east' },
         { x: 710, y: groundY, dir: 'west' },
       ];
     }
 
+    // 3+ players: player at bottom of arena, opponents at top
     const positions: { x: number; y: number; dir: Direction }[] = [];
     const playerIndex = fighters.findIndex(f => f.isPlayer);
 
     const opponents = fighters.filter(f => !f.isPlayer);
-    const topY = 180;
+    const topY = 140;
     const topSpacing = Math.min(200, 700 / (opponents.length + 1));
     const topStartX = 480 - (opponents.length - 1) * topSpacing / 2;
 
     let opIdx = 0;
     for (let i = 0; i < fighters.length; i++) {
       if (i === playerIndex) {
-        positions.push({ x: 480, y: 420, dir: 'north' });
+        positions.push({ x: 480, y: 320, dir: 'north' });
       } else {
         positions.push({
           x: topStartX + opIdx * topSpacing,
@@ -328,6 +359,7 @@ export class BattleScene extends BaseScene {
   override update(deltaMs: number): void {
     for (const entry of this.sprites.values()) {
       entry.sprite.update(deltaMs);
+      entry.hud.updateBlink(deltaMs);
     }
   }
 }

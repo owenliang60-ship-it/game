@@ -10,11 +10,13 @@ export interface ResourceBarConfig {
 }
 
 /**
- * A single resource bar (HP, MP, or RAGE) with animated fill and label.
+ * A single resource bar (HP, MP, or RAGE) with gradient fill, border, and highlight.
+ * HP bar blinks when < 25%.
  */
 export class ResourceBar extends Container {
   private bg: Graphics;
-  private fill: Graphics;
+  private fillGfx: Graphics;
+  private highlight: Graphics;
   private valueText: Text;
   private barWidth: number;
   private barHeight: number;
@@ -22,6 +24,8 @@ export class ResourceBar extends Container {
   private bgColor: number;
   private maxValue: number;
   private _currentRatio = 1;
+  private blinkTimer = 0;
+  private isBlinking = false;
 
   constructor(config: ResourceBarConfig) {
     super();
@@ -31,21 +35,27 @@ export class ResourceBar extends Container {
     this.bgColor = config.bgColor ?? 0x222222;
     this.maxValue = config.maxValue;
 
-    // Background
+    // Background track with border
     this.bg = new Graphics();
     this.bg.roundRect(0, 0, this.barWidth, this.barHeight, 2);
     this.bg.fill(this.bgColor);
+    this.bg.stroke({ color: 0x444444, width: 1, alpha: 0.5 });
     this.addChild(this.bg);
 
-    // Fill
-    this.fill = new Graphics();
+    // Fill (gradient simulated with two layers)
+    this.fillGfx = new Graphics();
     this.drawFill(1);
-    this.addChild(this.fill);
+    this.addChild(this.fillGfx);
 
-    // Label + value
+    // Top highlight (semi-transparent white strip)
+    this.highlight = new Graphics();
+    this.drawHighlight(1);
+    this.addChild(this.highlight);
+
+    // Label + value (VT323 for numeric display)
     const style = new TextStyle({
-      fontFamily: '"Microsoft YaHei", monospace',
-      fontSize: Math.max(8, this.barHeight - 1),
+      fontFamily: '"VT323", "Microsoft YaHei", monospace',
+      fontSize: Math.max(10, this.barHeight + 4),
       fill: 0xffffff,
     });
     this.valueText = new Text({ text: `${config.label} ${config.maxValue}/${config.maxValue}`, style });
@@ -59,29 +69,64 @@ export class ResourceBar extends Container {
     this.maxValue = max;
     this._currentRatio = Math.max(0, Math.min(1, current / max));
     this.drawFill(this._currentRatio);
+    this.drawHighlight(this._currentRatio);
     this.valueText.text = `${label} ${Math.round(current)}/${max}`;
+
+    // Enable blink for HP bar when low
+    this.isBlinking = (this.barColor === 0x22CC44 && this._currentRatio <= 0.25 && this._currentRatio > 0);
   }
 
-  /** Get current ratio [0, 1] */
   get currentRatio(): number {
     return this._currentRatio;
   }
 
+  /** Call each frame for blink animation */
+  updateBlink(deltaMs: number): void {
+    if (!this.isBlinking) {
+      this.fillGfx.alpha = 1;
+      return;
+    }
+    this.blinkTimer += deltaMs;
+    // Pulse alpha between 0.4 and 1.0 at ~3Hz
+    this.fillGfx.alpha = 0.7 + 0.3 * Math.sin(this.blinkTimer * 0.006 * Math.PI * 2);
+  }
+
   private drawFill(ratio: number): void {
-    this.fill.clear();
+    this.fillGfx.clear();
     if (ratio <= 0) return;
     const w = this.barWidth * ratio;
 
     // Color changes for HP when low
     let color = this.barColor;
     if (this.barColor === 0x22CC44) {
-      // HP bar: yellow when 25-50%, red when <25%
       if (ratio <= 0.25) color = 0xCC3333;
       else if (ratio <= 0.5) color = 0xCCAA33;
     }
 
-    this.fill.roundRect(0, 0, w, this.barHeight, 2);
-    this.fill.fill(color);
+    // Bottom layer (darker shade)
+    const darkerColor = this.darken(color, 0.6);
+    this.fillGfx.roundRect(0, 0, w, this.barHeight, 2);
+    this.fillGfx.fill(darkerColor);
+
+    // Top layer (brighter, upper half)
+    this.fillGfx.roundRect(0, 0, w, Math.ceil(this.barHeight * 0.55), 2);
+    this.fillGfx.fill(color);
+  }
+
+  private drawHighlight(ratio: number): void {
+    this.highlight.clear();
+    if (ratio <= 0) return;
+    const w = this.barWidth * ratio;
+    const h = Math.max(1, Math.floor(this.barHeight * 0.35));
+    this.highlight.roundRect(1, 1, w - 2, h, 1);
+    this.highlight.fill({ color: 0xffffff, alpha: 0.2 });
+  }
+
+  private darken(color: number, factor: number): number {
+    const r = Math.floor(((color >> 16) & 0xff) * factor);
+    const g = Math.floor(((color >> 8) & 0xff) * factor);
+    const b = Math.floor((color & 0xff) * factor);
+    return (r << 16) | (g << 8) | b;
   }
 }
 
@@ -95,8 +140,8 @@ export class ResourceBars extends Container {
 
   constructor(maxHp: number, maxMp: number, barWidth = 60) {
     super();
-    const h = 6;
-    const gap = 2;
+    const h = 7;
+    const gap = 3;
 
     this.hpBar = new ResourceBar({ width: barWidth, height: h, color: 0x22CC44, label: 'HP', maxValue: maxHp });
     this.hpBar.position.set(0, 0);
@@ -115,5 +160,10 @@ export class ResourceBars extends Container {
     this.hpBar.setValue(hp, maxHp, 'HP');
     this.mpBar.setValue(mp, maxMp, 'MP');
     this.rageBar.setValue(rage, 100, 'RAGE');
+  }
+
+  /** Call each frame for HP blink animation */
+  updateBlink(deltaMs: number): void {
+    this.hpBar.updateBlink(deltaMs);
   }
 }

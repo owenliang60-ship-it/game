@@ -53,7 +53,16 @@ export class BattleDirector {
     if (player) {
       const available = this.battle.getAvailableActions(player.id);
       const enemies = this.battle.getAliveFighters().filter(f => f.id !== player.id);
-      const action = await this.actionPanel.promptAction(player, available, enemies);
+
+      // Build position map and sprite containers from sprite entries
+      const positions = new Map<CharacterId, { x: number; y: number }>();
+      for (const e of enemies) {
+        const entry = this.scene.getSpriteEntry(e.id);
+        if (entry) positions.set(e.id, { x: entry.baseX, y: entry.baseY });
+      }
+
+      const spriteContainers = this.scene.getSpriteContainers();
+      const action = await this.actionPanel.promptAction(player, available, enemies, positions, spriteContainers);
       this.battle.submitPlayerAction(player.id, action);
     }
 
@@ -91,6 +100,7 @@ export class BattleDirector {
     if (!actorEntry) return;
 
     const actorSprite = actorEntry.sprite;
+    const actorFighter = this.battle.getFighter(action.actorId);
 
     switch (action.action.type) {
       case 'basic-attack':
@@ -99,6 +109,10 @@ export class BattleDirector {
 
         const firstTargetId = action.action.targetIds?.[0];
         const skillId = action.action.skillId;
+
+        // Show skill label above the actor
+        const labelName = skillId ? getSkill(skillId).name : '普通攻击';
+        this.effects.showSkillLabel(actorEntry.baseX, actorEntry.baseY, labelName, actorFighter.isPlayer);
         const isMelee = action.action.type === 'basic-attack' || this.isSkillMelee(skillId);
         const isRanged = !isMelee && skillId ? this.isSkillRanged(skillId) : false;
 
@@ -164,6 +178,7 @@ export class BattleDirector {
       }
 
       case 'defend': {
+        this.effects.showSkillLabel(actorEntry.baseX, actorEntry.baseY, '防御', actorFighter.isPlayer);
         actorSprite.play('defense', true);
         // Show defense overlay
         this.effects.showDefenseOverlay(actorEntry.baseX, actorEntry.baseY);
@@ -172,6 +187,7 @@ export class BattleDirector {
       }
 
       case 'escape': {
+        this.effects.showSkillLabel(actorEntry.baseX, actorEntry.baseY, '逃跑', actorFighter.isPlayer);
         actorSprite.play('escape', true);
         await wait(400);
         const escapeResult = action.results.find(r => r.resultType === 'escape');
