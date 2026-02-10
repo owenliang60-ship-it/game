@@ -5,7 +5,7 @@ import { Easing } from '../animation/Easing';
 export type LogType = 'system' | 'player' | 'enemy' | 'damage' | 'heal' | 'info';
 
 const LOG_COLORS: Record<LogType, number> = {
-  system: 0x909090,
+  system: 0x787068,
   player: 0xB08000,
   enemy: 0x4A6FA5,
   damage: 0xCC3333,
@@ -36,7 +36,7 @@ export class BattleLog extends Container {
     this.bg = new Graphics();
     this.bg.roundRect(0, 0, width, height, 4);
     this.bg.fill({ color: 0xF0EBE0, alpha: 0.75 });
-    this.bg.stroke({ color: 0xC8B898, width: 1 });
+    this.bg.stroke({ color: 0xB0A080, width: 1 });
     this.addChild(this.bg);
 
     // Fixed title
@@ -44,7 +44,7 @@ export class BattleLog extends Container {
       text: '战斗日志',
       style: new TextStyle({
         fontFamily: '"Press Start 2P", "VT323", monospace',
-        fontSize: 10,
+        fontSize: 12,
         fill: 0x8B6914,
       }),
     });
@@ -110,10 +110,12 @@ export class BattleLog extends Container {
   }
 
   private layoutLines(): void {
-    let y = 0;
-    for (const line of this.lineTexts) {
-      line.position.set(0, y);
-      y += 14;
+    const lineHeight = 17;
+    const availableHeight = this.panelHeight - 24;
+    const totalHeight = this.lineTexts.length * lineHeight;
+    const startY = Math.max(0, availableHeight - totalHeight);
+    for (let i = 0; i < this.lineTexts.length; i++) {
+      this.lineTexts[i].position.set(0, startY + i * lineHeight);
     }
   }
 }

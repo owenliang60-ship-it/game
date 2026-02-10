@@ -57,7 +57,7 @@ export class ActionPanel extends Container {
       style: new TextStyle({
         fontFamily: '"VT323", "Microsoft YaHei", monospace',
         fontSize: 16,
-        fill: 0x909090,
+        fill: 0x787068,
       }),
     });
     this.aiWaitText.anchor.set(0.5, 0.5);
@@ -121,11 +121,11 @@ export class ActionPanel extends Container {
       { label: 'DEF', value: `${player.currentDef}`, color: 0xCCAA44 },
     ];
 
-    let xPos = 20;
+    let xPos = 15;
     for (const stat of stats) {
       const labelStyle = new TextStyle({
         fontFamily: '"Microsoft YaHei", monospace',
-        fontSize: 11,
+        fontSize: 13,
         fill: 0x787068,
       });
       const labelText = new Text({ text: stat.label, style: labelStyle });
@@ -134,15 +134,15 @@ export class ActionPanel extends Container {
 
       const valueStyle = new TextStyle({
         fontFamily: '"Microsoft YaHei", monospace',
-        fontSize: 11,
+        fontSize: 13,
         fill: stat.color,
         fontWeight: 'bold',
       });
       const valueText = new Text({ text: stat.value, style: valueStyle });
-      valueText.position.set(xPos + 35, 0);
+      valueText.position.set(xPos + 32, 0);
       this.statusContainer.addChild(valueText);
 
-      xPos += 100;
+      xPos += 115;
     }
   }
 

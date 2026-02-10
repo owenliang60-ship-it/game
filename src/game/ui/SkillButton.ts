@@ -41,19 +41,19 @@ export class SkillButton extends Container {
     });
     this.nameText = new Text({ text: config.name, style: nameStyle });
     this.nameText.anchor.set(0.5, 0);
-    this.nameText.position.set(this.btnWidth / 2, 5);
+    this.nameText.position.set(this.btnWidth / 2, 6);
     this.addChild(this.nameText);
 
     // Cost label
     const costStyle = new TextStyle({
       fontFamily: '"Microsoft YaHei", monospace',
-      fontSize: 10,
-      fill: config.affordable ? 0x787068 : 0xB0B0B0,
+      fontSize: 12,
+      fill: config.affordable ? 0x787068 : 0x909090,
     });
     const costContent = config.affordable ? config.costLabel : (config.reason ?? config.costLabel);
     this.costText = new Text({ text: costContent, style: costStyle });
     this.costText.anchor.set(0.5, 0);
-    this.costText.position.set(this.btnWidth / 2, 22);
+    this.costText.position.set(this.btnWidth / 2, 24);
     this.addChild(this.costText);
 
     // Interaction
@@ -88,7 +88,7 @@ export class SkillButton extends Container {
       this.bg.stroke({ color: 0xD4A010, width: 2 });
     } else if (this._affordable) {
       this.bg.fill({ color: 0xF0EBE0, alpha: 0.85 });
-      this.bg.stroke({ color: 0xC8B898, width: 1 });
+      this.bg.stroke({ color: 0xB0A080, width: 1 });
     } else {
       this.bg.fill({ color: 0xE0DCD8, alpha: 0.7 });
       this.bg.stroke({ color: 0xC0C0C0, width: 1 });
@@ -100,7 +100,7 @@ export class SkillButton extends Container {
     this.bg.clear();
     this.bg.roundRect(0, 0, this.btnWidth, this.btnHeight, 4);
     this.bg.fill({ color: 0xE8E0D0, alpha: 0.9 });
-    this.bg.stroke({ color: 0xC8B898, width: 1 });
+    this.bg.stroke({ color: 0xB89818, width: 1.5 });
   };
 
   private onOut = () => {
