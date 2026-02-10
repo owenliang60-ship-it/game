@@ -1,6 +1,6 @@
 {
   "name": "battle-game",
-  "version": "0.1.0",
+  "version": "1.0.0-beta",
   "type": "module",
   "private": true,
   "description": "回合制多人对战游戏 - 像素风策略博弈",

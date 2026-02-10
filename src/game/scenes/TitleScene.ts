@@ -136,7 +136,7 @@ export class TitleScene extends BaseScene {
       fontSize: 14,
       fill: 0xA09890,
     });
-    const version = new Text({ text: 'v0.3.0-alpha  M3', style: verStyle });
+    const version = new Text({ text: 'v1.0.0-beta  M4', style: verStyle });
     version.anchor.set(1, 1);
     version.position.set(950, 530);
     this.container.addChild(version);
