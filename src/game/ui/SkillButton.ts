@@ -1,4 +1,5 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { drawRPGPanel } from './RPGPanel';
 
 export interface SkillButtonConfig {
   name: string;
@@ -7,10 +8,18 @@ export interface SkillButtonConfig {
   reason?: string;
   width?: number;
   height?: number;
+  /** Resource type for color indicator: 'mp' | 'hp' | 'rage' */
+  resourceType?: 'mp' | 'hp' | 'rage';
 }
 
+const RESOURCE_COLORS: Record<string, number> = {
+  mp: 0x4488CC,
+  hp: 0xCC3333,
+  rage: 0xFF6600,
+};
+
 /**
- * A skill button showing name + cost, with enabled/disabled state.
+ * A skill button with RPG panel background, name + cost, resource color indicator.
  */
 export class SkillButton extends Container {
   private bg: Graphics;
@@ -20,21 +29,32 @@ export class SkillButton extends Container {
   private _selected = false;
   private btnWidth: number;
   private btnHeight: number;
+  private resourceType: string;
 
   constructor(config: SkillButtonConfig) {
     super();
     this.btnWidth = config.width ?? 130;
     this.btnHeight = config.height ?? 40;
     this._affordable = config.affordable;
+    this.resourceType = config.resourceType ?? 'mp';
 
     // Background
     this.bg = new Graphics();
     this.drawBg();
     this.addChild(this.bg);
 
+    // Resource type color indicator (3x3 square, top-left)
+    if (config.affordable) {
+      const indicator = new Graphics();
+      const indColor = RESOURCE_COLORS[this.resourceType] ?? 0x4488CC;
+      indicator.rect(6, 6, 4, 4);
+      indicator.fill({ color: indColor, alpha: 0.7 });
+      this.addChild(indicator);
+    }
+
     // Skill name
     const nameStyle = new TextStyle({
-      fontFamily: '"Microsoft YaHei", "PingFang SC", sans-serif',
+      fontFamily: 'zpix, "PingFang SC", sans-serif',
       fontSize: 12,
       fill: config.affordable ? 0x3A3530 : 0xA0A0A0,
       fontWeight: 'bold',
@@ -46,7 +66,7 @@ export class SkillButton extends Container {
 
     // Cost label
     const costStyle = new TextStyle({
-      fontFamily: '"Microsoft YaHei", monospace',
+      fontFamily: '"VT323", monospace',
       fontSize: 12,
       fill: config.affordable ? 0x787068 : 0x909090,
     });
@@ -81,15 +101,22 @@ export class SkillButton extends Container {
 
   private drawBg(): void {
     this.bg.clear();
-    this.bg.roundRect(0, 0, this.btnWidth, this.btnHeight, 4);
 
     if (this._selected) {
-      this.bg.fill({ color: 0xFFF8E0, alpha: 0.9 });
-      this.bg.stroke({ color: 0xD4A010, width: 2 });
+      drawRPGPanel(this.bg, {
+        width: this.btnWidth, height: this.btnHeight, radius: 3,
+        fillColor: 0xFFF8E0, fillAlpha: 0.92,
+        shadow: false, innerFrame: false, cornerDots: false,
+        accentColor: 0xD4A010,
+      });
     } else if (this._affordable) {
-      this.bg.fill({ color: 0xF0EBE0, alpha: 0.85 });
-      this.bg.stroke({ color: 0xB0A080, width: 1 });
+      drawRPGPanel(this.bg, {
+        width: this.btnWidth, height: this.btnHeight, radius: 3,
+        fillColor: 0xF0EBE0, fillAlpha: 0.88,
+        shadow: false, innerFrame: false, cornerDots: false,
+      });
     } else {
+      this.bg.roundRect(0, 0, this.btnWidth, this.btnHeight, 3);
       this.bg.fill({ color: 0xE0DCD8, alpha: 0.7 });
       this.bg.stroke({ color: 0xC0C0C0, width: 1 });
     }
@@ -98,12 +125,17 @@ export class SkillButton extends Container {
   private onHover = () => {
     if (!this._affordable || this._selected) return;
     this.bg.clear();
-    this.bg.roundRect(0, 0, this.btnWidth, this.btnHeight, 4);
-    this.bg.fill({ color: 0xE8E0D0, alpha: 0.9 });
-    this.bg.stroke({ color: 0xB89818, width: 1.5 });
+    drawRPGPanel(this.bg, {
+      width: this.btnWidth, height: this.btnHeight, radius: 3,
+      fillColor: 0xE8E0D0, fillAlpha: 0.92,
+      shadow: false, innerFrame: false, cornerDots: false,
+      accentColor: 0xB89818,
+    });
+    this.y -= 1;
   };
 
   private onOut = () => {
     this.drawBg();
+    this.y += 1;
   };
 }

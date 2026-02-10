@@ -27,7 +27,7 @@ export class DamageNumber extends Container {
     const color = DAMAGE_COLORS[type];
 
     const style = new TextStyle({
-      fontFamily: '"Microsoft YaHei", sans-serif',
+      fontFamily: 'zpix, "Press Start 2P", monospace',
       fontSize,
       fill: color,
       fontWeight: 'bold',

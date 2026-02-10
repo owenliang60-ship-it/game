@@ -2,11 +2,13 @@ import { Application, Text, TextStyle, Graphics } from 'pixi.js';
 import { BaseScene } from './BaseScene';
 import { Button } from '../ui/Button';
 import { OrnamentDivider } from '../ui/OrnamentDivider';
+import { FrameBorder } from '../ui/FrameBorder';
+import { drawRPGPanel } from '../ui/RPGPanel';
 import type { SceneManager } from '../SceneManager';
 
 /**
  * Player count selection: choose 2-8 players.
- * Compact square buttons with Press Start 2P numbers.
+ * RPG panel cards with Press Start 2P numbers.
  */
 export class PlayerCountScene extends BaseScene {
   private sceneManager: SceneManager;
@@ -35,9 +37,13 @@ export class PlayerCountScene extends BaseScene {
     glow.fill({ color: 0xF5EDE0, alpha: 0.5 });
     this.container.addChild(glow);
 
+    // Decorative frame border
+    const frame = new FrameBorder();
+    this.container.addChild(frame);
+
     // Title
     const titleStyle = new TextStyle({
-      fontFamily: '"Press Start 2P", monospace',
+      fontFamily: 'zpix, "Press Start 2P", monospace',
       fontSize: 20,
       fill: 0x8B6914,
       letterSpacing: 4,
@@ -54,7 +60,7 @@ export class PlayerCountScene extends BaseScene {
 
     // Description
     const descStyle = new TextStyle({
-      fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
+      fontFamily: 'zpix, "PingFang SC", sans-serif',
       fontSize: 14,
       fill: 0x787068,
     });
@@ -63,7 +69,7 @@ export class PlayerCountScene extends BaseScene {
     desc.position.set(480, 140);
     this.container.addChild(desc);
 
-    // Player count buttons (compact squares)
+    // Player count buttons (RPG panel cards)
     const counts = [2, 3];
     const labels: Record<number, string> = {
       2: '1v1',
@@ -101,9 +107,14 @@ export class PlayerCountScene extends BaseScene {
       num.position.set(btnSize / 2, 25);
       card.addChild(num);
 
+      // Small OrnamentDivider under number
+      const cardDivider = new OrnamentDivider(80);
+      cardDivider.position.set(btnSize / 2 - 40, 70);
+      card.addChild(cardDivider);
+
       // Mode label
       const labelStyle = new TextStyle({
-        fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
+        fontFamily: 'zpix, "PingFang SC", sans-serif',
         fontSize: 16,
         fill: 0x3A3530,
       });
@@ -114,7 +125,7 @@ export class PlayerCountScene extends BaseScene {
 
       // Desc
       const dStyle = new TextStyle({
-        fontFamily: '"PingFang SC", sans-serif',
+        fontFamily: 'zpix, "PingFang SC", sans-serif',
         fontSize: 12,
         fill: 0x787068,
       });
@@ -157,8 +168,14 @@ export class PlayerCountScene extends BaseScene {
 
   private drawCountCard(card: Graphics, size: number, hover: boolean): void {
     card.clear();
-    card.roundRect(0, 0, size, 140, 6);
-    card.fill({ color: hover ? 0xEDE5D8 : 0xF0EBE0, alpha: 0.9 });
-    card.stroke({ color: hover ? 0xD4A010 : 0xC8B898, width: hover ? 2 : 1, alpha: 0.7 });
+    drawRPGPanel(card, {
+      width: size, height: 140, radius: 6,
+      fillColor: hover ? 0xEDE5D8 : 0xF0EBE0,
+      fillAlpha: 0.92,
+      shadow: true,
+      innerFrame: true,
+      cornerDots: true,
+      accentColor: hover ? 0xD4A010 : undefined,
+    });
   }
 }

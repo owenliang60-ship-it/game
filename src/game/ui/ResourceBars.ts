@@ -54,7 +54,7 @@ export class ResourceBar extends Container {
 
     // Label + value (VT323 for numeric display)
     const style = new TextStyle({
-      fontFamily: '"VT323", "Microsoft YaHei", monospace',
+      fontFamily: '"VT323", zpix, monospace',
       fontSize: Math.max(10, this.barHeight + 4),
       fill: 0x3A3530,
     });

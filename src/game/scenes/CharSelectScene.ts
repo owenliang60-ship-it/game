@@ -2,6 +2,10 @@ import { Application, Text, TextStyle, Graphics, Sprite } from 'pixi.js';
 import { BaseScene } from './BaseScene';
 import { Button } from '../ui/Button';
 import { OrnamentDivider } from '../ui/OrnamentDivider';
+import { FrameBorder } from '../ui/FrameBorder';
+import { drawRPGPanel } from '../ui/RPGPanel';
+import { TweenManager } from '../animation/TweenManager';
+import { Easing } from '../animation/Easing';
 import type { SceneManager } from '../SceneManager';
 import type { CharacterClass, BattleConfig } from '@/core/types';
 import type { AssetLoader, CharacterName } from '../AssetLoader';
@@ -27,7 +31,7 @@ const CHARACTERS: CharCardInfo[] = [
 ];
 
 /**
- * Character selection screen with sprite previews, light cards, and class colors.
+ * Character selection screen with RPG panel cards, sprite previews, and class colors.
  */
 export class CharSelectScene extends BaseScene {
   private sceneManager: SceneManager;
@@ -60,9 +64,13 @@ export class CharSelectScene extends BaseScene {
     glow.fill({ color: 0xF5EDE0, alpha: 0.4 });
     this.container.addChild(glow);
 
+    // Decorative frame border
+    const frame = new FrameBorder();
+    this.container.addChild(frame);
+
     // Title
     const titleStyle = new TextStyle({
-      fontFamily: '"Press Start 2P", monospace',
+      fontFamily: 'zpix, "Press Start 2P", monospace',
       fontSize: 18,
       fill: 0x8B6914,
       letterSpacing: 4,
@@ -86,9 +94,21 @@ export class CharSelectScene extends BaseScene {
     for (let i = 0; i < CHARACTERS.length; i++) {
       const char = CHARACTERS[i];
       const card = this.createCharCard(char, i);
-      card.position.set(startX + i * (cardWidth + cardGap), 70);
+      const finalY = 70;
+      card.position.set(startX + i * (cardWidth + cardGap), finalY);
       this.container.addChild(card);
       this.cards.push(card);
+
+      // Entrance animation: slide up from below with stagger
+      card.y = finalY + 40;
+      card.alpha = 0;
+      TweenManager.add({
+        target: card,
+        props: { y: finalY, alpha: 1 },
+        duration: 300,
+        delay: i * 100,
+        easing: Easing.easeOutCubic,
+      });
     }
 
     // Confirm button
@@ -133,13 +153,13 @@ export class CharSelectScene extends BaseScene {
 
     // Character name with class color
     const nameStyle = new TextStyle({
-      fontFamily: '"Press Start 2P", monospace',
+      fontFamily: 'zpix, "Press Start 2P", monospace',
       fontSize: 12,
       fill: char.color,
     });
     const name = new Text({ text: char.name, style: nameStyle });
     name.anchor.set(0.5, 0);
-    name.position.set(w / 2, 12);
+    name.position.set(w / 2, 14);
     card.addChild(name);
 
     // Character sprite
@@ -152,6 +172,12 @@ export class CharSelectScene extends BaseScene {
         sprite.position.set(w / 2, 85);
         sprite.scale.set(char.spriteScale);
         card.addChild(sprite);
+
+        // Ground shadow below sprite
+        const shadow = new Graphics();
+        shadow.ellipse(w / 2, 110, 20, 6);
+        shadow.fill({ color: char.color, alpha: 0.15 });
+        card.addChild(shadow);
       }
     } catch {
       // Fallback placeholder
@@ -172,7 +198,7 @@ export class CharSelectScene extends BaseScene {
     ];
 
     const statLabelStyle = new TextStyle({
-      fontFamily: '"PingFang SC", "Microsoft YaHei", monospace',
+      fontFamily: 'zpix, "PingFang SC", monospace',
       fontSize: 12,
       fill: 0x787068,
     });
@@ -212,6 +238,15 @@ export class CharSelectScene extends BaseScene {
       barFill.fill(stat.color);
       card.addChild(barFill);
 
+      // 20% tick marks on bar
+      for (let tick = 1; tick < 5; tick++) {
+        const tx = 130 + 85 * (tick / 5);
+        const tickMark = new Graphics();
+        tickMark.rect(tx, yPos + 3, 1, 6);
+        tickMark.fill({ color: 0x000000, alpha: 0.08 });
+        card.addChild(tickMark);
+      }
+
       yPos += 24;
     }
 
@@ -222,7 +257,7 @@ export class CharSelectScene extends BaseScene {
       '弓箭手': '远程输出型\n游击战术+箭雨',
     };
     const descStyle = new TextStyle({
-      fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
+      fontFamily: 'zpix, "PingFang SC", sans-serif',
       fontSize: 11,
       fill: 0x787068,
       wordWrap: true,
@@ -252,21 +287,20 @@ export class CharSelectScene extends BaseScene {
   private drawCard(card: Graphics, w: number, h: number, classColor: number, hover: boolean): void {
     card.clear();
 
-    // Outer border
-    card.roundRect(-1, -1, w + 2, h + 2, 9);
-    card.stroke({ color: hover ? 0xC8B898 : 0xD8D0C4, width: 1, alpha: 0.5 });
+    // Use RPGPanel for the card
+    drawRPGPanel(card, {
+      width: w, height: h, radius: 8,
+      fillColor: hover ? 0xEDE5D8 : 0xF5F0E8,
+      fillAlpha: 0.92,
+      shadow: true,
+      innerFrame: true,
+      cornerDots: true,
+      accentColor: hover ? classColor : undefined,
+    });
 
-    // Inner fill
-    card.roundRect(0, 0, w, h, 8);
-    card.fill({ color: hover ? 0xEDE5D8 : 0xF5F0E8, alpha: 0.92 });
-
-    // Inner border
-    card.roundRect(2, 2, w - 4, h - 4, 6);
-    card.stroke({ color: hover ? 0xC8B898 : 0xE0D8CC, width: 1, alpha: 0.4 });
-
-    // Class color accent at top
-    card.rect(4, 3, w - 8, 2);
-    card.fill({ color: classColor, alpha: hover ? 0.6 : 0.3 });
+    // Class color accent stripe at top (3px, inside the panel)
+    card.rect(6, 6, w - 12, 3);
+    card.fill({ color: classColor, alpha: hover ? 0.5 : 0.3 });
   }
 
   private selectCard(index: number): void {
@@ -280,23 +314,29 @@ export class CharSelectScene extends BaseScene {
       card.clear();
 
       if (i === index) {
-        // Selected: gold border, warm background
-        card.roundRect(-2, -2, w + 4, h + 4, 10);
-        card.fill({ color: 0xD4A010, alpha: 0.15 });
-        card.roundRect(0, 0, w, h, 8);
-        card.fill({ color: 0xFFF8E0, alpha: 0.95 });
-        card.stroke({ color: 0xD4A010, width: 2 });
-        card.roundRect(2, 2, w - 4, h - 4, 6);
-        card.stroke({ color: 0xC8B898, width: 1, alpha: 0.5 });
-        // Gold top glow
-        card.rect(4, 3, w - 8, 3);
+        // Selected: gold accent, warm background
+        drawRPGPanel(card, {
+          width: w, height: h, radius: 8,
+          fillColor: 0xFFF8E0,
+          fillAlpha: 0.95,
+          shadow: true,
+          innerFrame: true,
+          cornerDots: true,
+          accentColor: 0xD4A010,
+        });
+        card.rect(6, 6, w - 12, 3);
         card.fill({ color: 0xD4A010, alpha: 0.5 });
       } else {
         // Unselected: slightly dimmed
-        card.roundRect(0, 0, w, h, 8);
-        card.fill({ color: 0xF5F0E8, alpha: 0.7 });
-        card.stroke({ color: 0xD8D0C4, width: 1, alpha: 0.3 });
-        card.rect(4, 3, w - 8, 2);
+        drawRPGPanel(card, {
+          width: w, height: h, radius: 8,
+          fillColor: 0xF5F0E8,
+          fillAlpha: 0.7,
+          shadow: false,
+          innerFrame: false,
+          cornerDots: false,
+        });
+        card.rect(6, 6, w - 12, 2);
         card.fill({ color: char.color, alpha: 0.15 });
       }
     }

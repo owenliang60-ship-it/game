@@ -10,7 +10,7 @@ export class NamePlate extends Container {
     super();
 
     const style = new TextStyle({
-      fontFamily: '"Microsoft YaHei", "PingFang SC", monospace',
+      fontFamily: 'zpix, "PingFang SC", monospace',
       fontSize: 13,
       fill: isPlayer ? 0xB08000 : 0x606060,
       fontWeight: isPlayer ? 'bold' : 'normal',

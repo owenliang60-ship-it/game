@@ -147,7 +147,7 @@ export class EffectsManager {
     const label = new Text({
       text: skillName,
       style: new TextStyle({
-        fontFamily: '"VT323", "Microsoft YaHei", monospace',
+        fontFamily: 'zpix, "VT323", monospace',
         fontSize: 16,
         fill: color,
         fontWeight: 'bold',

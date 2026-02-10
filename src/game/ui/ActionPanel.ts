@@ -2,6 +2,7 @@ import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { SkillButton } from './SkillButton';
 import { Button } from './Button';
 import { TargetSelector } from './TargetSelector';
+import { drawRPGPanel } from './RPGPanel';
 import type { AvailableAction, CharacterId, ChosenAction, Fighter } from '@/core/types';
 import { getSkill } from '@/skills';
 
@@ -10,7 +11,7 @@ const PANEL_WIDTH = 660;
 
 /**
  * PixiJS-native action panel: skill selection + target selection.
- * Fixed at the bottom-left of the battle scene (no slide animation).
+ * Fixed at the bottom-left of the battle scene.
  */
 export class ActionPanel extends Container {
   private bg: Graphics;
@@ -28,34 +29,47 @@ export class ActionPanel extends Container {
   // AI waiting text
   private aiWaitText: Text;
 
+  // Turn indicator dot
+  private turnIndicator: Graphics;
+
   constructor() {
     super();
 
-    // Background (left portion of bottom panel)
+    // RPG Panel background
     this.bg = new Graphics();
-    this.bg.rect(0, 0, PANEL_WIDTH, PANEL_HEIGHT);
-    this.bg.fill({ color: 0xF0EBE0, alpha: 0.92 });
+    drawRPGPanel(this.bg, {
+      width: PANEL_WIDTH, height: PANEL_HEIGHT, radius: 0,
+      fillColor: 0xF0EBE0, fillAlpha: 0.94,
+      shadow: false, innerFrame: true, cornerDots: false,
+    });
     this.addChild(this.bg);
 
-    // Status bar at top of panel
+    // Status bar at top of panel with separator line below
     this.statusContainer = new Container();
     this.statusContainer.position.set(0, 8);
     this.addChild(this.statusContainer);
+
+    // Status separator line
+    const statusLine = new Graphics();
+    statusLine.rect(10, 28, PANEL_WIDTH - 20, 1);
+    statusLine.fill({ color: 0xD4C8B0, alpha: 0.4 });
+    this.addChild(statusLine);
 
     // Button area
     this.buttonContainer = new Container();
     this.buttonContainer.position.set(0, 35);
     this.addChild(this.buttonContainer);
 
+    // Vertical divider between base actions and skills (drawn in buildButtons)
     // Target selector (managed externally, rendered above the panel)
     this.targetSelector = new TargetSelector();
     this.targetSelector.visible = false;
 
-    // AI waiting text (shown when it's not the player's turn)
+    // AI waiting text
     this.aiWaitText = new Text({
       text: 'AI 行动中...',
       style: new TextStyle({
-        fontFamily: '"VT323", "Microsoft YaHei", monospace',
+        fontFamily: 'zpix, "VT323", monospace',
         fontSize: 16,
         fill: 0x787068,
       }),
@@ -64,6 +78,13 @@ export class ActionPanel extends Container {
     this.aiWaitText.position.set(PANEL_WIDTH / 2, PANEL_HEIGHT / 2);
     this.aiWaitText.visible = false;
     this.addChild(this.aiWaitText);
+
+    // Turn indicator (pulsing gold dot, top-left)
+    this.turnIndicator = new Graphics();
+    this.turnIndicator.circle(8, 8, 3);
+    this.turnIndicator.fill({ color: 0xD4A010, alpha: 0.8 });
+    this.turnIndicator.visible = false;
+    this.addChild(this.turnIndicator);
   }
 
   /** Get the target selector to add to the scene container */
@@ -76,6 +97,7 @@ export class ActionPanel extends Container {
     this.buttonContainer.visible = false;
     this.statusContainer.visible = false;
     this.aiWaitText.visible = true;
+    this.turnIndicator.visible = false;
     this.visible = true;
   }
 
@@ -100,6 +122,7 @@ export class ActionPanel extends Container {
     this.aiWaitText.visible = false;
     this.buttonContainer.visible = true;
     this.statusContainer.visible = true;
+    this.turnIndicator.visible = true;
 
     this.buildButtons(player, availableActions, enemies);
     this.buildStatusBar(player);
@@ -114,32 +137,38 @@ export class ActionPanel extends Container {
     this.statusContainer.removeChildren();
 
     const stats = [
-      { label: 'HP', value: `${Math.round(player.hp)}/${player.maxHp}`, color: 0xCC3333 },
-      { label: 'MP', value: `${player.mp}/${player.maxMp}`, color: 0x4488CC },
-      { label: 'RAGE', value: `${Math.round(player.rage)}/100`, color: 0xFF6600 },
-      { label: 'AGI', value: `${player.currentAgi}`, color: 0x88CC88 },
-      { label: 'DEF', value: `${player.currentDef}`, color: 0xCCAA44 },
+      { label: 'HP', value: `${Math.round(player.hp)}/${player.maxHp}`, color: 0xCC3333, dotColor: 0xCC3333 },
+      { label: 'MP', value: `${player.mp}/${player.maxMp}`, color: 0x4488CC, dotColor: 0x4488CC },
+      { label: 'RAGE', value: `${Math.round(player.rage)}/100`, color: 0xFF6600, dotColor: 0xFF6600 },
+      { label: 'AGI', value: `${player.currentAgi}`, color: 0x88CC88, dotColor: 0x88CC88 },
+      { label: 'DEF', value: `${player.currentDef}`, color: 0xCCAA44, dotColor: 0xCCAA44 },
     ];
 
     let xPos = 15;
     for (const stat of stats) {
+      // Color marker dot (3x3)
+      const dot = new Graphics();
+      dot.rect(xPos, 4, 3, 3);
+      dot.fill({ color: stat.dotColor, alpha: 0.7 });
+      this.statusContainer.addChild(dot);
+
       const labelStyle = new TextStyle({
-        fontFamily: '"Microsoft YaHei", monospace',
+        fontFamily: 'zpix, monospace',
         fontSize: 13,
         fill: 0x787068,
       });
       const labelText = new Text({ text: stat.label, style: labelStyle });
-      labelText.position.set(xPos, 0);
+      labelText.position.set(xPos + 6, 0);
       this.statusContainer.addChild(labelText);
 
       const valueStyle = new TextStyle({
-        fontFamily: '"Microsoft YaHei", monospace',
+        fontFamily: '"VT323", monospace',
         fontSize: 13,
         fill: stat.color,
         fontWeight: 'bold',
       });
       const valueText = new Text({ text: stat.value, style: valueStyle });
-      valueText.position.set(xPos + 32, 0);
+      valueText.position.set(xPos + 38, 0);
       this.statusContainer.addChild(valueText);
 
       xPos += 115;
@@ -155,9 +184,57 @@ export class ActionPanel extends Container {
     this.skillButtons = [];
     this.baseButtons = [];
 
+    // Section titles
+    const baseTitleStyle = new TextStyle({
+      fontFamily: 'zpix, monospace',
+      fontSize: 10,
+      fill: 0x9A8A70,
+    });
+    const baseTitle = new Text({ text: '基础', style: baseTitleStyle });
+    baseTitle.position.set(15, -6);
+    this.buttonContainer.addChild(baseTitle);
+    // Underline
+    const baseUnderline = new Graphics();
+    baseUnderline.rect(15, 6, 60, 1);
+    baseUnderline.fill({ color: 0xD4C8B0, alpha: 0.4 });
+    this.buttonContainer.addChild(baseUnderline);
+
+    const skillTitleStyle = new TextStyle({
+      fontFamily: 'zpix, monospace',
+      fontSize: 10,
+      fill: 0x9A8A70,
+    });
+    const skillTitle = new Text({ text: '技能', style: skillTitleStyle });
+    skillTitle.position.set(125, -6);
+    this.buttonContainer.addChild(skillTitle);
+    const skillUnderline = new Graphics();
+    skillUnderline.rect(125, 6, 60, 1);
+    skillUnderline.fill({ color: 0xD4C8B0, alpha: 0.4 });
+    this.buttonContainer.addChild(skillUnderline);
+
+    // Vertical divider between base and skill sections
+    const divider = new Graphics();
+    divider.rect(110, -6, 1, 110);
+    divider.fill({ color: 0xD4C8B0, alpha: 0.3 });
+    // Top diamond
+    divider.moveTo(110.5, -8);
+    divider.lineTo(113, -5.5);
+    divider.lineTo(110.5, -3);
+    divider.lineTo(108, -5.5);
+    divider.closePath();
+    divider.fill({ color: 0xC8A050, alpha: 0.4 });
+    // Bottom diamond
+    divider.moveTo(110.5, 104);
+    divider.lineTo(113, 106.5);
+    divider.lineTo(110.5, 109);
+    divider.lineTo(108, 106.5);
+    divider.closePath();
+    divider.fill({ color: 0xC8A050, alpha: 0.4 });
+    this.buttonContainer.addChild(divider);
+
     // Base actions (left column)
     const baseActions = actions.filter(a => a.type !== 'skill');
-    let y = 0;
+    let y = 12;
     for (const action of baseActions) {
       let label = '';
       switch (action.type) {
@@ -200,11 +277,12 @@ export class ActionPanel extends Container {
         reason: action.reason,
         width: btnW,
         height: btnH,
+        resourceType: skill.cost.resource as 'mp' | 'hp' | 'rage',
       });
 
       const col = i % cols;
       const row = Math.floor(i / cols);
-      btn.position.set(startX + col * (btnW + gapX), row * (btnH + gapY));
+      btn.position.set(startX + col * (btnW + gapX), 12 + row * (btnH + gapY));
 
       if (action.affordable) {
         btn.on('pointertap', () => this.onSkillAction(action, skill, player, enemies));
@@ -279,6 +357,7 @@ export class ActionPanel extends Container {
     this.targetSelector.hide();
     this.buttonContainer.visible = false;
     this.statusContainer.visible = false;
+    this.turnIndicator.visible = false;
     this.showAiWaiting();
     this.resolveAction?.(action);
     this.resolveAction = null;

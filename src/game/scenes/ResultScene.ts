@@ -2,6 +2,10 @@ import { Application, Text, TextStyle, Graphics, Sprite } from 'pixi.js';
 import { BaseScene } from './BaseScene';
 import { Button } from '../ui/Button';
 import { OrnamentDivider } from '../ui/OrnamentDivider';
+import { FrameBorder } from '../ui/FrameBorder';
+import { drawRPGPanel } from '../ui/RPGPanel';
+import { TweenManager } from '../animation/TweenManager';
+import { Easing } from '../animation/Easing';
 import type { SceneManager } from '../SceneManager';
 import type { AssetLoader, CharacterName } from '../AssetLoader';
 
@@ -50,14 +54,34 @@ export class ResultScene extends BaseScene {
     glow.fill({ color: isDraw ? 0xF0EBE0 : 0xFAF0D8, alpha: 0.5 });
     this.container.addChild(glow);
 
-    // Top ornament
-    const topDivider = new OrnamentDivider(500);
+    // Decorative frame border
+    const frame = new FrameBorder();
+    this.container.addChild(frame);
+
+    // Top ornament (ornate variant)
+    const topDivider = new OrnamentDivider(500, 'ornate');
     topDivider.position.set(230, 80);
     this.container.addChild(topDivider);
 
+    // Victory/Draw banner shadow
+    const shadowStyle = new TextStyle({
+      fontFamily: 'zpix, "Press Start 2P", monospace',
+      fontSize: 28,
+      fill: 0xD4C4A0,
+      letterSpacing: 6,
+    });
+    const bannerShadow = new Text({
+      text: isDraw ? '平局!' : '胜利!',
+      style: shadowStyle,
+    });
+    bannerShadow.anchor.set(0.5, 0);
+    bannerShadow.position.set(482, 97);
+    bannerShadow.alpha = 0.4;
+    this.container.addChild(bannerShadow);
+
     // Victory/Draw banner
     const bannerStyle = new TextStyle({
-      fontFamily: '"Press Start 2P", monospace',
+      fontFamily: 'zpix, "Press Start 2P", monospace',
       fontSize: 28,
       fill: isDraw ? 0x787068 : 0x8B6914,
       letterSpacing: 6,
@@ -71,14 +95,39 @@ export class ResultScene extends BaseScene {
     banner.position.set(480, 95);
     this.container.addChild(banner);
 
+    // Victory text entrance: scale bounce
+    if (!isDraw) {
+      banner.scale.set(1.5);
+      banner.alpha = 0;
+      bannerShadow.alpha = 0;
+      TweenManager.add({
+        target: banner,
+        props: { alpha: 1 },
+        duration: 100,
+        easing: Easing.linear,
+      });
+      TweenManager.add({
+        target: banner.scale,
+        props: { x: 1.0, y: 1.0 },
+        duration: 500,
+        easing: Easing.easeOutBack,
+      });
+      TweenManager.add({
+        target: bannerShadow,
+        props: { alpha: 0.4 },
+        duration: 400,
+        delay: 200,
+        easing: Easing.linear,
+      });
+    }
+
     // Bottom ornament
-    const bottomDivider = new OrnamentDivider(500);
+    const bottomDivider = new OrnamentDivider(500, 'ornate');
     bottomDivider.position.set(230, 140);
     this.container.addChild(bottomDivider);
 
     // Winner name + sprite
     if (!isDraw) {
-      // Try to show winner sprite
       const baseName = winner.replace(/ \(你\)$/, '');
       const assetName = NAME_TO_ASSET[baseName];
       if (assetName) {
@@ -86,11 +135,23 @@ export class ResultScene extends BaseScene {
           const assets = this.assetLoader.getCharacter(assetName);
           const texture = assets.rotations['south'] ?? assets.rotations['S'];
           if (texture) {
+            // Gold glow behind winner
+            const winnerGlow = new Graphics();
+            winnerGlow.ellipse(480, 220, 60, 50);
+            winnerGlow.fill({ color: 0xD4A010, alpha: 0.12 });
+            this.container.addChild(winnerGlow);
+
             const sprite = new Sprite(texture);
             sprite.anchor.set(0.5, 0.5);
             sprite.position.set(480, 220);
             sprite.scale.set(RESULT_SCALE[assetName] ?? 0.95);
             this.container.addChild(sprite);
+
+            // Ground shadow below sprite
+            const groundShadow = new Graphics();
+            groundShadow.ellipse(480, 260, 25, 8);
+            groundShadow.fill({ color: 0x8B6914, alpha: 0.15 });
+            this.container.addChild(groundShadow);
           }
         } catch {
           // fallback: no sprite
@@ -98,7 +159,7 @@ export class ResultScene extends BaseScene {
       }
 
       const nameStyle = new TextStyle({
-        fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
+        fontFamily: 'zpix, "PingFang SC", sans-serif',
         fontSize: 22,
         fill: 0x3A3530,
         fontWeight: 'bold',
@@ -109,22 +170,19 @@ export class ResultScene extends BaseScene {
       this.container.addChild(nameText);
     }
 
-    // Stats panel (light card with borders)
+    // Stats panel (RPG Panel)
     const panelW = 300;
     const panelH = 60;
     const panelX = (960 - panelW) / 2;
     const panelY = isDraw ? 200 : 320;
 
     const panel = new Graphics();
-    // Outer border
-    panel.roundRect(panelX - 1, panelY - 1, panelW + 2, panelH + 2, 7);
-    panel.stroke({ color: 0xC8B898, width: 1, alpha: 0.5 });
-    // Fill
-    panel.roundRect(panelX, panelY, panelW, panelH, 6);
-    panel.fill({ color: 0xF0EBE0, alpha: 0.85 });
-    // Inner border
-    panel.roundRect(panelX + 2, panelY + 2, panelW - 4, panelH - 4, 4);
-    panel.stroke({ color: 0xE0D8CC, width: 1, alpha: 0.3 });
+    drawRPGPanel(panel, {
+      width: panelW, height: panelH, radius: 6,
+      fillColor: 0xF0EBE0, fillAlpha: 0.88,
+      shadow: true, innerFrame: true, cornerDots: true,
+    });
+    panel.position.set(panelX, panelY);
     this.container.addChild(panel);
 
     const statStyle = new TextStyle({

@@ -1,15 +1,17 @@
 import { Container, Graphics } from 'pixi.js';
 
+export type DividerVariant = 'default' | 'ornate';
+
 /**
  * Gold ornamental divider: left gradient line + diamond + right gradient line.
- * Matches the HTML prototype's `.ornate-divider` style.
+ * 'ornate' variant adds a double diamond + side dots.
  */
 export class OrnamentDivider extends Container {
-  constructor(totalWidth = 400) {
+  constructor(totalWidth = 400, variant: DividerVariant = 'default') {
     super();
 
     const halfW = totalWidth / 2;
-    const diamondSize = 5;
+    const diamondSize = variant === 'ornate' ? 6 : 5;
     const lineY = 0;
 
     // Left gradient line (fades from transparent to gold)
@@ -32,6 +34,24 @@ export class OrnamentDivider extends Container {
     diamond.lineTo(cx - diamondSize, lineY);
     diamond.closePath();
     diamond.fill({ color: 0xB8960C, alpha: 0.8 });
+
+    if (variant === 'ornate') {
+      // Inner smaller diamond
+      const s2 = diamondSize * 0.5;
+      diamond.moveTo(cx, lineY - s2);
+      diamond.lineTo(cx + s2, lineY);
+      diamond.lineTo(cx, lineY + s2);
+      diamond.lineTo(cx - s2, lineY);
+      diamond.closePath();
+      diamond.fill({ color: 0xD4A010, alpha: 0.6 });
+
+      // Side dots (left and right of diamond)
+      diamond.circle(cx - diamondSize - 5, lineY, 1.5);
+      diamond.fill({ color: 0xB8960C, alpha: 0.5 });
+      diamond.circle(cx + diamondSize + 5, lineY, 1.5);
+      diamond.fill({ color: 0xB8960C, alpha: 0.5 });
+    }
+
     this.addChild(diamond);
 
     // Right gradient line (fades from gold to transparent)
