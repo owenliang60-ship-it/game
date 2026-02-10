@@ -5,12 +5,12 @@ import { Easing } from '../animation/Easing';
 export type LogType = 'system' | 'player' | 'enemy' | 'damage' | 'heal' | 'info';
 
 const LOG_COLORS: Record<LogType, number> = {
-  system: 0x999999,
-  player: 0xFFD700,
-  enemy: 0x6688CC,
-  damage: 0xFF4444,
-  heal: 0x33FF66,
-  info: 0xCCCCCC,
+  system: 0x909090,
+  player: 0xB08000,
+  enemy: 0x4A6FA5,
+  damage: 0xCC3333,
+  heal: 0x228B22,
+  info: 0x606060,
 };
 
 /**
@@ -35,8 +35,8 @@ export class BattleLog extends Container {
     // Semi-transparent background
     this.bg = new Graphics();
     this.bg.roundRect(0, 0, width, height, 4);
-    this.bg.fill({ color: 0x0a0a1a, alpha: 0.75 });
-    this.bg.stroke({ color: 0x333355, width: 1 });
+    this.bg.fill({ color: 0xF0EBE0, alpha: 0.75 });
+    this.bg.stroke({ color: 0xC8B898, width: 1 });
     this.addChild(this.bg);
 
     // Fixed title
@@ -45,7 +45,7 @@ export class BattleLog extends Container {
       style: new TextStyle({
         fontFamily: '"Press Start 2P", "VT323", monospace',
         fontSize: 10,
-        fill: 0xc8a050,
+        fill: 0x8B6914,
       }),
     });
     this.titleText.position.set(8, 4);
@@ -65,7 +65,7 @@ export class BattleLog extends Container {
   }
 
   add(text: string, type: LogType = 'info'): void {
-    const color = LOG_COLORS[type] ?? 0xCCCCCC;
+    const color = LOG_COLORS[type] ?? 0x606060;
 
     const lineText = new Text({
       text,

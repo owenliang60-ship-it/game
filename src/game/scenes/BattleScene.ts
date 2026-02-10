@@ -137,7 +137,7 @@ export class BattleScene extends BaseScene {
       const assetName = CLASS_TO_ASSET[fighter.characterClass];
       const assets = this.assetLoader.getCharacter(assetName);
 
-      const charSprite = new CharacterSprite(assets, 3);
+      const charSprite = new CharacterSprite(assets, 2.4);
       charSprite.setPosition(pos.x, pos.y);
       charSprite.setDirection(pos.dir);
       charSprite.play('idle');
@@ -165,10 +165,10 @@ export class BattleScene extends BaseScene {
     // --- Bottom Panel (y=375-540, full width) ---
     const bottomPanel = new Graphics();
     bottomPanel.rect(0, 375, 960, 165);
-    bottomPanel.fill({ color: 0x0a0618, alpha: 0.8 });
-    // Gold top border
+    bottomPanel.fill({ color: 0xE8E0D4, alpha: 0.8 });
+    // Warm top border
     bottomPanel.rect(0, 375, 960, 2);
-    bottomPanel.fill({ color: 0xc8a050, alpha: 0.6 });
+    bottomPanel.fill({ color: 0xC8B898, alpha: 0.6 });
     this.container.addChild(bottomPanel);
 
     // Action panel (left side of bottom panel)

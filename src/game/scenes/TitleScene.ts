@@ -6,7 +6,7 @@ import type { SceneManager } from '../SceneManager';
 import type { AssetLoader, CharacterName } from '../AssetLoader';
 
 /**
- * Title screen: multi-layer gradient bg + pixel font title + character previews + ornate dividers.
+ * Title screen: light background + pixel font title + character previews + ornate dividers.
  */
 export class TitleScene extends BaseScene {
   private sceneManager: SceneManager;
@@ -21,25 +21,21 @@ export class TitleScene extends BaseScene {
   onEnter(): void {
     this.container.removeChildren();
 
-    // Multi-layer background (radial-ish: center warm, edges dark)
+    // Light warm background
     const bg = new Graphics();
     bg.rect(0, 0, 960, 540);
-    bg.fill(0x0a0618);
+    bg.fill(0xE8E0D4);
     this.container.addChild(bg);
 
-    // Radial glow in center (simulated with concentric ellipses)
+    // Soft warm glow in center (very subtle)
     const glow = new Graphics();
     glow.ellipse(480, 260, 400, 250);
-    glow.fill({ color: 0x1a1428, alpha: 0.6 });
+    glow.fill({ color: 0xF5EDE0, alpha: 0.6 });
     this.container.addChild(glow);
     const glow2 = new Graphics();
     glow2.ellipse(480, 260, 250, 150);
-    glow2.fill({ color: 0x221a30, alpha: 0.4 });
+    glow2.fill({ color: 0xFAF4E8, alpha: 0.4 });
     this.container.addChild(glow2);
-    const glow3 = new Graphics();
-    glow3.ellipse(480, 240, 120, 80);
-    glow3.fill({ color: 0x2a2038, alpha: 0.3 });
-    this.container.addChild(glow3);
 
     // Top ornament divider
     const topDivider = new OrnamentDivider(500);
@@ -50,16 +46,9 @@ export class TitleScene extends BaseScene {
     const titleStyle = new TextStyle({
       fontFamily: '"Press Start 2P", monospace',
       fontSize: 32,
-      fill: 0xFFD700,
+      fill: 0x8B6914,
       letterSpacing: 8,
-      stroke: { color: 0x4a2800, width: 3 },
-      dropShadow: {
-        color: 0x000000,
-        blur: 6,
-        distance: 3,
-        angle: Math.PI / 4,
-        alpha: 0.5,
-      },
+      stroke: { color: 0xD4C4A0, width: 2 },
     });
     const title = new Text({ text: '口头对战', style: titleStyle });
     title.anchor.set(0.5, 0);
@@ -75,7 +64,7 @@ export class TitleScene extends BaseScene {
     const subStyle = new TextStyle({
       fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
       fontSize: 16,
-      fill: 0xC8A050,
+      fill: 0x787068,
       letterSpacing: 4,
     });
     const subtitle = new Text({ text: '回合制策略对战', style: subStyle });
@@ -103,7 +92,7 @@ export class TitleScene extends BaseScene {
           const sprite = new Sprite(texture);
           sprite.anchor.set(0.5, 0.5);
           sprite.position.set(x, y);
-          sprite.scale.set(0.8);
+          sprite.scale.set(0.65);
           this.container.addChild(sprite);
         }
       } catch {
@@ -145,7 +134,7 @@ export class TitleScene extends BaseScene {
     const verStyle = new TextStyle({
       fontFamily: '"VT323", monospace',
       fontSize: 14,
-      fill: 0x444444,
+      fill: 0xA09890,
     });
     const version = new Text({ text: 'v0.3.0-alpha  M3', style: verStyle });
     version.anchor.set(1, 1);

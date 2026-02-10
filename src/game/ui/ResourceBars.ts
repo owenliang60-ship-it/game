@@ -32,14 +32,14 @@ export class ResourceBar extends Container {
     this.barWidth = config.width;
     this.barHeight = config.height;
     this.barColor = config.color;
-    this.bgColor = config.bgColor ?? 0x222222;
+    this.bgColor = config.bgColor ?? 0xD0CCC4;
     this.maxValue = config.maxValue;
 
     // Background track with border
     this.bg = new Graphics();
     this.bg.roundRect(0, 0, this.barWidth, this.barHeight, 2);
     this.bg.fill(this.bgColor);
-    this.bg.stroke({ color: 0x444444, width: 1, alpha: 0.5 });
+    this.bg.stroke({ color: 0xB8B0A0, width: 1, alpha: 0.5 });
     this.addChild(this.bg);
 
     // Fill (gradient simulated with two layers)
@@ -56,7 +56,7 @@ export class ResourceBar extends Container {
     const style = new TextStyle({
       fontFamily: '"VT323", "Microsoft YaHei", monospace',
       fontSize: Math.max(10, this.barHeight + 4),
-      fill: 0xffffff,
+      fill: 0x3A3530,
     });
     this.valueText = new Text({ text: `${config.label} ${config.maxValue}/${config.maxValue}`, style });
     this.valueText.anchor.set(0, 0.5);
@@ -119,7 +119,7 @@ export class ResourceBar extends Container {
     const w = this.barWidth * ratio;
     const h = Math.max(1, Math.floor(this.barHeight * 0.35));
     this.highlight.roundRect(1, 1, w - 2, h, 1);
-    this.highlight.fill({ color: 0xffffff, alpha: 0.2 });
+    this.highlight.fill({ color: 0xffffff, alpha: 0.3 });
   }
 
   private darken(color: number, factor: number): number {

@@ -26,20 +26,20 @@ export class PlayerCountScene extends BaseScene {
     // Background
     const bg = new Graphics();
     bg.rect(0, 0, 960, 540);
-    bg.fill(0x0a0618);
+    bg.fill(0xE8E0D4);
     this.container.addChild(bg);
 
     // Subtle center glow
     const glow = new Graphics();
     glow.ellipse(480, 270, 350, 200);
-    glow.fill({ color: 0x1a1428, alpha: 0.5 });
+    glow.fill({ color: 0xF5EDE0, alpha: 0.5 });
     this.container.addChild(glow);
 
     // Title
     const titleStyle = new TextStyle({
       fontFamily: '"Press Start 2P", monospace',
       fontSize: 20,
-      fill: 0xFFD700,
+      fill: 0x8B6914,
       letterSpacing: 4,
     });
     const title = new Text({ text: '选择人数', style: titleStyle });
@@ -56,7 +56,7 @@ export class PlayerCountScene extends BaseScene {
     const descStyle = new TextStyle({
       fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
       fontSize: 14,
-      fill: 0x999999,
+      fill: 0x787068,
     });
     const desc = new Text({ text: '你将操控一位角色，其余由AI控制', style: descStyle });
     desc.anchor.set(0.5, 0);
@@ -94,7 +94,7 @@ export class PlayerCountScene extends BaseScene {
       const numStyle = new TextStyle({
         fontFamily: '"Press Start 2P", monospace',
         fontSize: 36,
-        fill: 0xFFD700,
+        fill: 0x8B6914,
       });
       const num = new Text({ text: `${count}`, style: numStyle });
       num.anchor.set(0.5, 0);
@@ -105,7 +105,7 @@ export class PlayerCountScene extends BaseScene {
       const labelStyle = new TextStyle({
         fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
         fontSize: 16,
-        fill: 0xf5e6c8,
+        fill: 0x3A3530,
       });
       const labelText = new Text({ text: labels[count], style: labelStyle });
       labelText.anchor.set(0.5, 0);
@@ -116,7 +116,7 @@ export class PlayerCountScene extends BaseScene {
       const dStyle = new TextStyle({
         fontFamily: '"PingFang SC", sans-serif',
         fontSize: 12,
-        fill: 0x888888,
+        fill: 0x787068,
       });
       const dText = new Text({ text: descs[count], style: dStyle });
       dText.anchor.set(0.5, 0);
@@ -158,7 +158,7 @@ export class PlayerCountScene extends BaseScene {
   private drawCountCard(card: Graphics, size: number, hover: boolean): void {
     card.clear();
     card.roundRect(0, 0, size, 140, 6);
-    card.fill({ color: hover ? 0x2a1a40 : 0x1a0e2e, alpha: 0.9 });
-    card.stroke({ color: hover ? 0xffd700 : 0xc8a050, width: hover ? 2 : 1, alpha: 0.7 });
+    card.fill({ color: hover ? 0xEDE5D8 : 0xF0EBE0, alpha: 0.9 });
+    card.stroke({ color: hover ? 0xD4A010 : 0xC8B898, width: hover ? 2 : 1, alpha: 0.7 });
   }
 }

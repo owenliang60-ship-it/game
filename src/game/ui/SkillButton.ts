@@ -36,7 +36,7 @@ export class SkillButton extends Container {
     const nameStyle = new TextStyle({
       fontFamily: '"Microsoft YaHei", "PingFang SC", sans-serif',
       fontSize: 12,
-      fill: config.affordable ? 0xf5e6c8 : 0x666666,
+      fill: config.affordable ? 0x3A3530 : 0xA0A0A0,
       fontWeight: 'bold',
     });
     this.nameText = new Text({ text: config.name, style: nameStyle });
@@ -48,7 +48,7 @@ export class SkillButton extends Container {
     const costStyle = new TextStyle({
       fontFamily: '"Microsoft YaHei", monospace',
       fontSize: 10,
-      fill: config.affordable ? 0xaaaacc : 0x555555,
+      fill: config.affordable ? 0x787068 : 0xB0B0B0,
     });
     const costContent = config.affordable ? config.costLabel : (config.reason ?? config.costLabel);
     this.costText = new Text({ text: costContent, style: costStyle });
@@ -84,14 +84,14 @@ export class SkillButton extends Container {
     this.bg.roundRect(0, 0, this.btnWidth, this.btnHeight, 4);
 
     if (this._selected) {
-      this.bg.fill({ color: 0x3a2a20, alpha: 0.9 });
-      this.bg.stroke({ color: 0xffd700, width: 2 });
+      this.bg.fill({ color: 0xFFF8E0, alpha: 0.9 });
+      this.bg.stroke({ color: 0xD4A010, width: 2 });
     } else if (this._affordable) {
-      this.bg.fill({ color: 0x2a1a3e, alpha: 0.85 });
-      this.bg.stroke({ color: 0xc8a050, width: 1 });
+      this.bg.fill({ color: 0xF0EBE0, alpha: 0.85 });
+      this.bg.stroke({ color: 0xC8B898, width: 1 });
     } else {
-      this.bg.fill({ color: 0x1a1a2a, alpha: 0.7 });
-      this.bg.stroke({ color: 0x444444, width: 1 });
+      this.bg.fill({ color: 0xE0DCD8, alpha: 0.7 });
+      this.bg.stroke({ color: 0xC0C0C0, width: 1 });
     }
   }
 
@@ -99,8 +99,8 @@ export class SkillButton extends Container {
     if (!this._affordable || this._selected) return;
     this.bg.clear();
     this.bg.roundRect(0, 0, this.btnWidth, this.btnHeight, 4);
-    this.bg.fill({ color: 0x3a2a50, alpha: 0.9 });
-    this.bg.stroke({ color: 0xd4b060, width: 1 });
+    this.bg.fill({ color: 0xE8E0D0, alpha: 0.9 });
+    this.bg.stroke({ color: 0xC8B898, width: 1 });
   };
 
   private onOut = () => {

@@ -39,7 +39,7 @@ export class TargetSelector extends Container {
     const style = new TextStyle({
       fontFamily: '"VT323", "Microsoft YaHei", sans-serif',
       fontSize: 14,
-      fill: 0xFFD700,
+      fill: 0xB08000,
     });
     this.promptText = new Text({ text: '点击目标角色', style });
     this.promptText.anchor.set(0.5, 0);
@@ -75,7 +75,7 @@ export class TargetSelector extends Container {
 
         // Draw pulsing indicator ellipse below the sprite position
         const indicator = new Graphics();
-        this.drawIndicator(indicator, t.x, t.y + 30, 0xc8a050, 0.5);
+        this.drawIndicator(indicator, t.x, t.y + 30, 0xC8B898, 0.5);
         this.addChild(indicator);
 
         if (spriteContainer) {
@@ -112,11 +112,11 @@ export class TargetSelector extends Container {
           indicator.cursor = 'pointer';
           indicator.on('pointertap', () => this.onSpriteClick(t.id, t.x, t.y));
           indicator.on('pointerover', () => {
-            this.drawIndicator(indicator, t.x, t.y + 30, 0xFFD700, 0.8);
+            this.drawIndicator(indicator, t.x, t.y + 30, 0xD4A010, 0.8);
           });
           indicator.on('pointerout', () => {
             if (!this.selectedTargets.includes(t.id)) {
-              this.drawIndicator(indicator, t.x, t.y + 30, 0xc8a050, 0.5);
+              this.drawIndicator(indicator, t.x, t.y + 30, 0xC8B898, 0.5);
             }
           });
         }
@@ -134,7 +134,7 @@ export class TargetSelector extends Container {
     if (!state) return;
 
     // Brighten indicator
-    this.drawIndicator(state.indicator, x, y + 30, 0xFFD700, 0.8);
+    this.drawIndicator(state.indicator, x, y + 30, 0xD4A010, 0.8);
 
     // Scale up sprite slightly
     sprite.scale.set(state.originalScaleX * 1.05, state.originalScaleY * 1.05);
@@ -146,7 +146,7 @@ export class TargetSelector extends Container {
     if (!state) return;
 
     // Reset indicator
-    this.drawIndicator(state.indicator, x, y + 30, 0xc8a050, 0.5);
+    this.drawIndicator(state.indicator, x, y + 30, 0xC8B898, 0.5);
 
     // Reset scale
     sprite.scale.set(state.originalScaleX, state.originalScaleY);
@@ -158,7 +158,7 @@ export class TargetSelector extends Container {
     this.selectedTargets.push(id);
     const state = this.spriteStates.get(id);
     if (state) {
-      this.drawIndicator(state.indicator, x, y + 30, 0xFFD700, 1.0);
+      this.drawIndicator(state.indicator, x, y + 30, 0xD4A010, 1.0);
     }
 
     if (this.maxTargets > 1) {

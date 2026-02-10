@@ -13,18 +13,18 @@ export interface ButtonConfig {
   primary?: boolean;
 }
 
-// Gradient layer colors for normal buttons
-const GRAD_TOP = 0x3a2a52;
-const GRAD_MID = 0x2a1a3e;
-const GRAD_BOT = 0x1a0e2e;
+// Gradient layer colors for normal buttons (light theme)
+const GRAD_TOP = 0xE8E0D0;
+const GRAD_MID = 0xDCD4C4;
+const GRAD_BOT = 0xD0C8B8;
 
-// Gradient layer colors for primary buttons
-const PRIM_TOP = 0x5a4a2e;
-const PRIM_MID = 0x3e3020;
-const PRIM_BOT = 0x2a2010;
+// Gradient layer colors for primary buttons (gold theme)
+const PRIM_TOP = 0xE8C848;
+const PRIM_MID = 0xD4B438;
+const PRIM_BOT = 0xC0A028;
 
 /**
- * Reusable PixiJS button with 3-layer gradient, gold border, and hover/press/disabled states.
+ * Reusable PixiJS button with 3-layer gradient, border, and hover/press/disabled states.
  */
 export class Button extends Container {
   private bg: Graphics;
@@ -42,11 +42,11 @@ export class Button extends Container {
       width: config.width,
       height: config.height,
       fontSize: config.fontSize ?? 13,
-      fill: config.fill ?? 0x2a1a3e,
-      textColor: config.textColor ?? 0xf5e6c8,
-      borderColor: config.borderColor ?? 0xc8a050,
-      disabledFill: config.disabledFill ?? 0x1a1a2a,
-      disabledTextColor: config.disabledTextColor ?? 0x555555,
+      fill: config.fill ?? 0xDCD4C4,
+      textColor: config.textColor ?? (isPrimary ? 0x4A3A10 : 0x3A3530),
+      borderColor: config.borderColor ?? (isPrimary ? 0xB89818 : 0xB8A888),
+      disabledFill: config.disabledFill ?? 0xDCD8D0,
+      disabledTextColor: config.disabledTextColor ?? 0xA0A0A0,
       primary: isPrimary,
     };
 
@@ -107,7 +107,7 @@ export class Button extends Container {
     if (state === 'disabled') {
       this.bg.roundRect(0, 0, width, height, 4);
       this.bg.fill({ color: this.config.disabledFill, alpha: 0.85 });
-      this.bg.stroke({ color: 0x444444, width: 1 });
+      this.bg.stroke({ color: 0xC0C0C0, width: 1 });
       return;
     }
 
@@ -118,17 +118,17 @@ export class Button extends Container {
 
     switch (state) {
       case 'hover':
-        top = isPrimary ? 0x6a5a3e : 0x4a3a62;
-        mid = isPrimary ? 0x4e3830 : 0x3a2a50;
-        bot = isPrimary ? 0x3a3020 : 0x2a1a3e;
-        borderCol = isPrimary ? 0xffd700 : 0xd4b060;
+        top = isPrimary ? 0xF0D858 : 0xF0E8D8;
+        mid = isPrimary ? 0xDCC048 : 0xE4DCD0;
+        bot = isPrimary ? 0xC8AC30 : 0xD8D0C0;
+        borderCol = isPrimary ? 0xD4A010 : 0xC8B898;
         borderWidth = 2;
         break;
       case 'press':
-        top = isPrimary ? 0x3a2a1e : 0x1a0e2e;
-        mid = isPrimary ? 0x2a1a10 : 0x150a22;
-        bot = isPrimary ? 0x1a1008 : 0x0a0518;
-        borderCol = 0xffd700;
+        top = isPrimary ? 0xB89820 : 0xC8C0B0;
+        mid = isPrimary ? 0xA88818 : 0xBCB4A4;
+        bot = isPrimary ? 0x987810 : 0xB0A898;
+        borderCol = 0xD4A010;
         borderWidth = 2;
         break;
       default: // normal
