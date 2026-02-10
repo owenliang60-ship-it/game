@@ -16,7 +16,7 @@ export class FighterHUD extends Container {
     super();
 
     // RPG panel card background (lightweight: no shadow, no corner dots)
-    const cardW = 130;
+    const cardW = 180;
     const cardH = 52;
     this.cardBg = new Graphics();
     drawRPGPanel(this.cardBg, {
@@ -53,7 +53,7 @@ export class FighterHUD extends Container {
     }
 
     this.resourceBars = new ResourceBars(maxHp, maxMp, 60);
-    this.resourceBars.position.set(-30, 18);
+    this.resourceBars.position.set(-55, 18);
     this.addChild(this.resourceBars);
   }
 

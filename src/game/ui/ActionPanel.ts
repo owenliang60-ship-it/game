@@ -2,7 +2,9 @@ import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { SkillButton } from './SkillButton';
 import { Button } from './Button';
 import { TargetSelector } from './TargetSelector';
+import { SkillTooltip } from './SkillTooltip';
 import { drawRPGPanel } from './RPGPanel';
+import { skillTooltipData, baseActionTooltipData } from './tooltipData';
 import type { AvailableAction, CharacterId, ChosenAction, Fighter } from '@/core/types';
 import { getSkill } from '@/skills';
 
@@ -19,6 +21,7 @@ export class ActionPanel extends Container {
   private baseButtons: Button[] = [];
   private buttonContainer: Container;
   private targetSelector: TargetSelector;
+  private tooltip: SkillTooltip;
   private resolveAction: ((action: ChosenAction) => void) | null = null;
   private positionMap = new Map<CharacterId, { x: number; y: number }>();
   private spriteContainers = new Map<CharacterId, Container>();
@@ -60,10 +63,13 @@ export class ActionPanel extends Container {
     this.buttonContainer.position.set(0, 35);
     this.addChild(this.buttonContainer);
 
-    // Vertical divider between base actions and skills (drawn in buildButtons)
     // Target selector (managed externally, rendered above the panel)
     this.targetSelector = new TargetSelector();
     this.targetSelector.visible = false;
+
+    // Tooltip (rendered above the panel via negative Y)
+    this.tooltip = new SkillTooltip();
+    this.addChild(this.tooltip);
 
     // AI waiting text
     this.aiWaitText = new Text({
@@ -98,6 +104,7 @@ export class ActionPanel extends Container {
     this.statusContainer.visible = false;
     this.aiWaitText.visible = true;
     this.turnIndicator.visible = false;
+    this.tooltip.hideTooltip();
     this.visible = true;
   }
 
@@ -251,6 +258,18 @@ export class ActionPanel extends Container {
       });
       btn.position.set(15, y);
       btn.on('pointertap', () => this.onBaseAction(action, player, enemies));
+
+      // Tooltip on hover
+      const actionType = action.type;
+      btn.on('pointerover', () => {
+        const data = baseActionTooltipData(actionType);
+        // Button position in panel coords: buttonContainer offset + btn position
+        const bx = btn.position.x + 45; // center of button
+        const by = this.buttonContainer.position.y + btn.position.y; // top of button
+        this.tooltip.showAt(bx, by, data);
+      });
+      btn.on('pointerout', () => this.tooltip.hideTooltip());
+
       this.buttonContainer.addChild(btn);
       this.baseButtons.push(btn);
       y += 36;
@@ -287,6 +306,16 @@ export class ActionPanel extends Container {
       if (action.affordable) {
         btn.on('pointertap', () => this.onSkillAction(action, skill, player, enemies));
       }
+
+      // Tooltip on hover (for all skills, even unaffordable)
+      const skillRef = skill;
+      btn.on('pointerover', () => {
+        const data = skillTooltipData(skillRef);
+        const bx = btn.position.x + btnW / 2;
+        const by = this.buttonContainer.position.y + btn.position.y;
+        this.tooltip.showAt(bx, by, data);
+      });
+      btn.on('pointerout', () => this.tooltip.hideTooltip());
 
       this.buttonContainer.addChild(btn);
       this.skillButtons.push(btn);
@@ -355,6 +384,7 @@ export class ActionPanel extends Container {
 
   private submitAction(action: ChosenAction): void {
     this.targetSelector.hide();
+    this.tooltip.hideTooltip();
     this.buttonContainer.visible = false;
     this.statusContainer.visible = false;
     this.turnIndicator.visible = false;
@@ -366,5 +396,6 @@ export class ActionPanel extends Container {
   hide(): void {
     this.visible = false;
     this.targetSelector.hide();
+    this.tooltip.hideTooltip();
   }
 }
