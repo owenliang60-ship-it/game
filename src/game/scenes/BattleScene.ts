@@ -232,24 +232,22 @@ export class BattleScene extends BaseScene {
       ];
     }
 
+    // Triangle formation: player at bottom center, enemies on left/right sides
     const positions: { x: number; y: number; dir: Direction }[] = [];
     const playerIndex = fighters.findIndex(f => f.isPlayer);
 
-    const opponents = fighters.filter(f => !f.isPlayer);
-    const topY = 140;
-    const topSpacing = Math.min(200, 700 / (opponents.length + 1));
-    const topStartX = 480 - (opponents.length - 1) * topSpacing / 2;
+    // Side positions for opponents (spread left/right, slightly above player)
+    const sideSlots: { x: number; y: number; dir: Direction }[] = [
+      { x: 200, y: 260, dir: 'east' },   // left enemy faces right
+      { x: 760, y: 260, dir: 'west' },   // right enemy faces left
+    ];
 
     let opIdx = 0;
     for (let i = 0; i < fighters.length; i++) {
       if (i === playerIndex) {
-        positions.push({ x: 480, y: 320, dir: 'north' });
+        positions.push({ x: 480, y: 340, dir: 'north' });
       } else {
-        positions.push({
-          x: topStartX + opIdx * topSpacing,
-          y: topY,
-          dir: 'south',
-        });
+        positions.push(sideSlots[opIdx] ?? { x: 480, y: 200, dir: 'south' });
         opIdx++;
       }
     }
