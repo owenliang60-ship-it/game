@@ -11,7 +11,7 @@ export class SlashEffect extends Container {
   private progress = { value: 0 };
   private slashColor: number;
 
-  constructor(color = 0xFFFFFF) {
+  constructor(color = 0x5A4830) {
     super();
     this.slashColor = color;
     this.arc = new Graphics();

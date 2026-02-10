@@ -18,7 +18,7 @@ async function main() {
   await app.init({
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
-    backgroundColor: 0x1a0e2e,
+    backgroundColor: 0xE8E0D4,
     antialias: false,
     roundPixels: true,
     resolution: window.devicePixelRatio || 1,

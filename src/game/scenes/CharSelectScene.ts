@@ -17,16 +17,17 @@ interface CharCardInfo {
   agi: number;
   skills: number;
   color: number;
+  spriteScale: number;
 }
 
 const CHARACTERS: CharCardInfo[] = [
-  { characterClass: 'knight', name: '骑士', assetName: 'knight', hp: 300, mp: 150, atk: 30, def: 2, agi: 7, skills: 6, color: 0x5A9BD5 },
-  { characterClass: 'armored-warrior', name: '装甲战士', assetName: 'armored-warrior', hp: 350, mp: 120, atk: 25, def: 3, agi: 4, skills: 5, color: 0xD45A5A },
-  { characterClass: 'archer', name: '弓箭手', assetName: 'archer', hp: 270, mp: 150, atk: 20, def: 1.5, agi: 6, skills: 6, color: 0x5ABD6A },
+  { characterClass: 'knight', name: '骑士', assetName: 'knight', hp: 300, mp: 150, atk: 30, def: 2, agi: 7, skills: 6, color: 0x5A9BD5, spriteScale: 0.41 },
+  { characterClass: 'armored-warrior', name: '装甲战士', assetName: 'armored-warrior', hp: 350, mp: 120, atk: 25, def: 3, agi: 4, skills: 5, color: 0xD45A5A, spriteScale: 0.55 },
+  { characterClass: 'archer', name: '弓箭手', assetName: 'archer', hp: 270, mp: 150, atk: 20, def: 1.5, agi: 6, skills: 6, color: 0x5ABD6A, spriteScale: 0.55 },
 ];
 
 /**
- * Character selection screen with sprite previews, dual-border cards, and class colors.
+ * Character selection screen with sprite previews, light cards, and class colors.
  */
 export class CharSelectScene extends BaseScene {
   private sceneManager: SceneManager;
@@ -50,20 +51,20 @@ export class CharSelectScene extends BaseScene {
     // Background
     const bg = new Graphics();
     bg.rect(0, 0, 960, 540);
-    bg.fill(0x0a0618);
+    bg.fill(0xE8E0D4);
     this.container.addChild(bg);
 
     // Center glow
     const glow = new Graphics();
     glow.ellipse(480, 280, 400, 240);
-    glow.fill({ color: 0x1a1428, alpha: 0.4 });
+    glow.fill({ color: 0xF5EDE0, alpha: 0.4 });
     this.container.addChild(glow);
 
     // Title
     const titleStyle = new TextStyle({
       fontFamily: '"Press Start 2P", monospace',
       fontSize: 18,
-      fill: 0xFFD700,
+      fill: 0x8B6914,
       letterSpacing: 4,
     });
     const title = new Text({ text: '选择角色', style: titleStyle });
@@ -149,7 +150,7 @@ export class CharSelectScene extends BaseScene {
         const sprite = new Sprite(texture);
         sprite.anchor.set(0.5, 0.5);
         sprite.position.set(w / 2, 85);
-        sprite.scale.set(0.7);
+        sprite.scale.set(char.spriteScale);
         card.addChild(sprite);
       }
     } catch {
@@ -163,7 +164,7 @@ export class CharSelectScene extends BaseScene {
     // Stats (with VT323 font for values)
     const stats = [
       { label: 'HP', value: char.hp, color: 0x22CC44 },
-      { label: 'MP', value: char.mp, color: 0x4488FF },
+      { label: 'MP', value: char.mp, color: 0x2266CC },
       { label: 'ATK', value: char.atk, color: 0xFF4444 },
       { label: 'DEF', value: char.def, color: 0xCCAA44 },
       { label: 'AGI', value: char.agi, color: 0x88CC88 },
@@ -173,7 +174,7 @@ export class CharSelectScene extends BaseScene {
     const statLabelStyle = new TextStyle({
       fontFamily: '"PingFang SC", "Microsoft YaHei", monospace',
       fontSize: 12,
-      fill: 0x999999,
+      fill: 0x787068,
     });
 
     let yPos = 130;
@@ -195,8 +196,8 @@ export class CharSelectScene extends BaseScene {
       // Stat bar background
       const barBg = new Graphics();
       barBg.rect(130, yPos + 3, 85, 6);
-      barBg.fill(0x1a1a2a);
-      barBg.stroke({ color: 0x333333, width: 1, alpha: 0.3 });
+      barBg.fill(0xD8D4CC);
+      barBg.stroke({ color: 0xC8C0B0, width: 1, alpha: 0.3 });
       card.addChild(barBg);
 
       const maxValues: Record<string, number> = { HP: 400, MP: 200, ATK: 40, DEF: 4, AGI: 10, '技能': 8 };
@@ -223,7 +224,7 @@ export class CharSelectScene extends BaseScene {
     const descStyle = new TextStyle({
       fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
       fontSize: 11,
-      fill: 0x777777,
+      fill: 0x787068,
       wordWrap: true,
       wordWrapWidth: w - 40,
       lineHeight: 16,
@@ -253,15 +254,15 @@ export class CharSelectScene extends BaseScene {
 
     // Outer border
     card.roundRect(-1, -1, w + 2, h + 2, 9);
-    card.stroke({ color: hover ? 0xd4b060 : 0x3a2a5a, width: 1, alpha: 0.5 });
+    card.stroke({ color: hover ? 0xC8B898 : 0xD8D0C4, width: 1, alpha: 0.5 });
 
     // Inner fill
     card.roundRect(0, 0, w, h, 8);
-    card.fill({ color: hover ? 0x2a1a40 : 0x140a28, alpha: 0.92 });
+    card.fill({ color: hover ? 0xEDE5D8 : 0xF5F0E8, alpha: 0.92 });
 
     // Inner border
     card.roundRect(2, 2, w - 4, h - 4, 6);
-    card.stroke({ color: hover ? 0xc8a050 : 0x2a1a3e, width: 1, alpha: 0.4 });
+    card.stroke({ color: hover ? 0xC8B898 : 0xE0D8CC, width: 1, alpha: 0.4 });
 
     // Class color accent at top
     card.rect(4, 3, w - 8, 2);
@@ -279,22 +280,22 @@ export class CharSelectScene extends BaseScene {
       card.clear();
 
       if (i === index) {
-        // Selected: gold border, bright background
+        // Selected: gold border, warm background
         card.roundRect(-2, -2, w + 4, h + 4, 10);
-        card.fill({ color: 0xffd700, alpha: 0.15 });
+        card.fill({ color: 0xD4A010, alpha: 0.15 });
         card.roundRect(0, 0, w, h, 8);
-        card.fill({ color: 0x2a1a30, alpha: 0.95 });
-        card.stroke({ color: 0xFFD700, width: 2 });
+        card.fill({ color: 0xFFF8E0, alpha: 0.95 });
+        card.stroke({ color: 0xD4A010, width: 2 });
         card.roundRect(2, 2, w - 4, h - 4, 6);
-        card.stroke({ color: 0xc8a050, width: 1, alpha: 0.5 });
+        card.stroke({ color: 0xC8B898, width: 1, alpha: 0.5 });
         // Gold top glow
         card.rect(4, 3, w - 8, 3);
-        card.fill({ color: 0xffd700, alpha: 0.5 });
+        card.fill({ color: 0xD4A010, alpha: 0.5 });
       } else {
-        // Unselected: dimmed
+        // Unselected: slightly dimmed
         card.roundRect(0, 0, w, h, 8);
-        card.fill({ color: 0x140a28, alpha: 0.7 });
-        card.stroke({ color: 0x3a2a5a, width: 1, alpha: 0.3 });
+        card.fill({ color: 0xF5F0E8, alpha: 0.7 });
+        card.stroke({ color: 0xD8D0C4, width: 1, alpha: 0.3 });
         card.rect(4, 3, w - 8, 2);
         card.fill({ color: char.color, alpha: 0.15 });
       }

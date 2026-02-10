@@ -27,7 +27,7 @@ export class SceneManager {
     // Full-screen fade overlay (on top of everything)
     this.fadeOverlay = new Graphics();
     this.fadeOverlay.rect(0, 0, app.screen.width, app.screen.height);
-    this.fadeOverlay.fill(0x000000);
+    this.fadeOverlay.fill(0xE8E0D4);
     this.fadeOverlay.alpha = 0;
     this.fadeOverlay.eventMode = 'none';
     app.stage.addChild(this.fadeOverlay);

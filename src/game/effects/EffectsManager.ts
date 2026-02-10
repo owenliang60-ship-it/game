@@ -45,7 +45,7 @@ export class EffectsManager {
     flash.destroy();
   }
 
-  async showSlash(x: number, y: number, color = 0xFFFFFF): Promise<void> {
+  async showSlash(x: number, y: number, color = 0x5A4830): Promise<void> {
     const slash = new SlashEffect(color);
     slash.position.set(x, y - 30);
     this.layer.addChild(slash);
@@ -54,7 +54,7 @@ export class EffectsManager {
     slash.destroy();
   }
 
-  async showProjectile(fromX: number, fromY: number, toX: number, toY: number, color = 0xFFD700): Promise<void> {
+  async showProjectile(fromX: number, fromY: number, toX: number, toY: number, color = 0xB8960C): Promise<void> {
     const proj = new ProjectileEffect(color);
     proj.position.set(fromX, fromY - 30);
     this.layer.addChild(proj);
@@ -63,7 +63,7 @@ export class EffectsManager {
     proj.destroy();
   }
 
-  showDefenseOverlay(x: number, y: number, color = 0x4488FF): DefenseOverlay {
+  showDefenseOverlay(x: number, y: number, color = 0x2060AA): DefenseOverlay {
     const overlay = new DefenseOverlay(color);
     overlay.position.set(x, y);
     this.layer.addChild(overlay);
@@ -143,7 +143,7 @@ export class EffectsManager {
 
   /** Skill label floating above a character */
   showSkillLabel(x: number, y: number, skillName: string, isPlayer: boolean): void {
-    const color = isPlayer ? 0xFFD700 : 0x8899BB;
+    const color = isPlayer ? 0xB08000 : 0x4A6FA5;
     const label = new Text({
       text: skillName,
       style: new TextStyle({

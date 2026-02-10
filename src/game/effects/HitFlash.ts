@@ -13,7 +13,7 @@ export class HitFlash extends Container {
 
     this.flash = new Graphics();
     this.flash.rect(-width / 2, -height, width, height);
-    this.flash.fill({ color: 0xFFFFFF, alpha: 0.7 });
+    this.flash.fill({ color: 0xFFA040, alpha: 0.5 });
     this.flash.alpha = 0;
     this.addChild(this.flash);
   }

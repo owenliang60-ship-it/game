@@ -29,7 +29,7 @@ export class ChargeEffect extends Container {
 
       // Simple rectangle ghost
       this.ghosts.roundRect(x - 15, y - 60, 30, 50, 4);
-      this.ghosts.fill({ color: 0xFFFFFF, alpha });
+      this.ghosts.fill({ color: 0x6B5A30, alpha });
     }
 
     // Fade out the trail

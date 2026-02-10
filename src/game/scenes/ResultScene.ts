@@ -11,6 +11,13 @@ const NAME_TO_ASSET: Record<string, CharacterName> = {
   '弓箭手': 'archer',
 };
 
+/** Per-character result scale (knight=128px canvas needs smaller scale) */
+const RESULT_SCALE: Record<string, number> = {
+  'knight': 0.71,           // 128px × 0.71 ≈ 91px
+  'armored-warrior': 0.95,  // 96px × 0.95 ≈ 91px
+  'archer': 0.95,           // 96px × 0.95 ≈ 91px
+};
+
 /**
  * Battle result screen: winner sprite + stats panel + ornate dividers.
  */
@@ -34,13 +41,13 @@ export class ResultScene extends BaseScene {
     // Background
     const bg = new Graphics();
     bg.rect(0, 0, 960, 540);
-    bg.fill(0x0a0618);
+    bg.fill(0xE8E0D4);
     this.container.addChild(bg);
 
-    // Center glow (brighter for victory)
+    // Center glow (warmer for victory)
     const glow = new Graphics();
     glow.ellipse(480, 250, 300, 200);
-    glow.fill({ color: isDraw ? 0x181828 : 0x2a2018, alpha: 0.5 });
+    glow.fill({ color: isDraw ? 0xF0EBE0 : 0xFAF0D8, alpha: 0.5 });
     this.container.addChild(glow);
 
     // Top ornament
@@ -52,15 +59,9 @@ export class ResultScene extends BaseScene {
     const bannerStyle = new TextStyle({
       fontFamily: '"Press Start 2P", monospace',
       fontSize: 28,
-      fill: isDraw ? 0x888888 : 0xFFD700,
+      fill: isDraw ? 0x909090 : 0x8B6914,
       letterSpacing: 6,
-      stroke: { color: 0x000000, width: 3 },
-      dropShadow: isDraw ? undefined : {
-        color: 0xffd700,
-        blur: 12,
-        distance: 0,
-        alpha: 0.3,
-      },
+      stroke: { color: 0xE8E0D4, width: 2 },
     });
     const banner = new Text({
       text: isDraw ? '平局!' : '胜利!',
@@ -88,7 +89,7 @@ export class ResultScene extends BaseScene {
             const sprite = new Sprite(texture);
             sprite.anchor.set(0.5, 0.5);
             sprite.position.set(480, 220);
-            sprite.scale.set(1.2);
+            sprite.scale.set(RESULT_SCALE[assetName] ?? 0.95);
             this.container.addChild(sprite);
           }
         } catch {
@@ -99,7 +100,7 @@ export class ResultScene extends BaseScene {
       const nameStyle = new TextStyle({
         fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
         fontSize: 22,
-        fill: 0xf5e6c8,
+        fill: 0x3A3530,
         fontWeight: 'bold',
       });
       const nameText = new Text({ text: winner, style: nameStyle });
@@ -108,7 +109,7 @@ export class ResultScene extends BaseScene {
       this.container.addChild(nameText);
     }
 
-    // Stats panel (dark card with borders)
+    // Stats panel (light card with borders)
     const panelW = 300;
     const panelH = 60;
     const panelX = (960 - panelW) / 2;
@@ -117,19 +118,19 @@ export class ResultScene extends BaseScene {
     const panel = new Graphics();
     // Outer border
     panel.roundRect(panelX - 1, panelY - 1, panelW + 2, panelH + 2, 7);
-    panel.stroke({ color: 0x3a2a5a, width: 1, alpha: 0.5 });
+    panel.stroke({ color: 0xC8B898, width: 1, alpha: 0.5 });
     // Fill
     panel.roundRect(panelX, panelY, panelW, panelH, 6);
-    panel.fill({ color: 0x0e0820, alpha: 0.85 });
+    panel.fill({ color: 0xF0EBE0, alpha: 0.85 });
     // Inner border
     panel.roundRect(panelX + 2, panelY + 2, panelW - 4, panelH - 4, 4);
-    panel.stroke({ color: 0x2a1a3e, width: 1, alpha: 0.3 });
+    panel.stroke({ color: 0xE0D8CC, width: 1, alpha: 0.3 });
     this.container.addChild(panel);
 
     const statStyle = new TextStyle({
       fontFamily: '"VT323", monospace',
       fontSize: 20,
-      fill: 0xAAAAAA,
+      fill: 0x606060,
     });
     const stats = new Text({
       text: `对战持续 ${rounds} 回合`,
@@ -160,9 +161,9 @@ export class ResultScene extends BaseScene {
       width: 160,
       height: 48,
       fontSize: 14,
-      fill: 0x1a1a2a,
-      borderColor: 0x666666,
-      textColor: 0xAAAAAA,
+      fill: 0xE8E0D0,
+      borderColor: 0xC8B898,
+      textColor: 0x606060,
     });
     titleBtn.position.set(520, btnY);
     titleBtn.on('pointertap', () => {

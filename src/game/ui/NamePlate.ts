@@ -1,7 +1,7 @@
 import { Container, Text, TextStyle } from 'pixi.js';
 
 /**
- * Character name display. Gold for player, grey for AI.
+ * Character name display. Deep gold for player, grey for AI.
  */
 export class NamePlate extends Container {
   private nameText: Text;
@@ -12,7 +12,7 @@ export class NamePlate extends Container {
     const style = new TextStyle({
       fontFamily: '"Microsoft YaHei", "PingFang SC", monospace',
       fontSize: 13,
-      fill: isPlayer ? 0xFFD700 : 0xAAAAAA,
+      fill: isPlayer ? 0xB08000 : 0x606060,
       fontWeight: isPlayer ? 'bold' : 'normal',
     });
 
@@ -22,7 +22,7 @@ export class NamePlate extends Container {
   }
 
   setDead(): void {
-    this.nameText.style.fill = 0x666666;
+    this.nameText.style.fill = 0xB0B0B0;
     this.nameText.alpha = 0.6;
   }
 }

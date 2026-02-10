@@ -61,10 +61,10 @@ export class ShieldWallGlow extends Container {
     this.glow.clear();
     // Blue sphere
     this.glow.circle(0, -40, 35);
-    this.glow.fill({ color: 0x4488FF, alpha: 0.3 });
+    this.glow.fill({ color: 0xD4A010, alpha: 0.3 });
     this.glow.circle(0, -40, 25);
-    this.glow.fill({ color: 0x66AAFF, alpha: 0.2 });
+    this.glow.fill({ color: 0xE8B830, alpha: 0.25 });
     this.glow.circle(0, -40, 15);
-    this.glow.fill({ color: 0x88CCFF, alpha: 0.15 });
+    this.glow.fill({ color: 0xF0C840, alpha: 0.2 });
   }
 }

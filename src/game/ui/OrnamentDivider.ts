@@ -19,7 +19,7 @@ export class OrnamentDivider extends Container {
     for (let i = 0; i < segments; i++) {
       const alpha = (i / segments) * 0.7;
       leftLine.rect(i * segW, lineY, segW + 1, 1);
-      leftLine.fill({ color: 0xc8a050, alpha });
+      leftLine.fill({ color: 0xB8960C, alpha });
     }
     this.addChild(leftLine);
 
@@ -31,7 +31,7 @@ export class OrnamentDivider extends Container {
     diamond.lineTo(cx, lineY + diamondSize);
     diamond.lineTo(cx - diamondSize, lineY);
     diamond.closePath();
-    diamond.fill({ color: 0xc8a050, alpha: 0.8 });
+    diamond.fill({ color: 0xB8960C, alpha: 0.8 });
     this.addChild(diamond);
 
     // Right gradient line (fades from gold to transparent)
@@ -40,7 +40,7 @@ export class OrnamentDivider extends Container {
     for (let i = 0; i < segments; i++) {
       const alpha = (1 - i / segments) * 0.7;
       rightLine.rect(rightStart + i * segW, lineY, segW + 1, 1);
-      rightLine.fill({ color: 0xc8a050, alpha });
+      rightLine.fill({ color: 0xB8960C, alpha });
     }
     this.addChild(rightLine);
   }

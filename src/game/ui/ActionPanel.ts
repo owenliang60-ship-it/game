@@ -34,7 +34,7 @@ export class ActionPanel extends Container {
     // Background (left portion of bottom panel)
     this.bg = new Graphics();
     this.bg.rect(0, 0, PANEL_WIDTH, PANEL_HEIGHT);
-    this.bg.fill({ color: 0x0e0820, alpha: 0.92 });
+    this.bg.fill({ color: 0xF0EBE0, alpha: 0.92 });
     this.addChild(this.bg);
 
     // Status bar at top of panel
@@ -57,7 +57,7 @@ export class ActionPanel extends Container {
       style: new TextStyle({
         fontFamily: '"VT323", "Microsoft YaHei", monospace',
         fontSize: 16,
-        fill: 0x888888,
+        fill: 0x909090,
       }),
     });
     this.aiWaitText.anchor.set(0.5, 0.5);
@@ -126,7 +126,7 @@ export class ActionPanel extends Container {
       const labelStyle = new TextStyle({
         fontFamily: '"Microsoft YaHei", monospace',
         fontSize: 11,
-        fill: 0x999999,
+        fill: 0x787068,
       });
       const labelText = new Text({ text: stat.label, style: labelStyle });
       labelText.position.set(xPos, 0);

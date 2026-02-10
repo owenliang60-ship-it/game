@@ -3,8 +3,8 @@ import { NamePlate } from './NamePlate';
 import { ResourceBars } from './ResourceBars';
 
 /**
- * Combined HUD for a single fighter: dark card background + name + resource bars.
- * Player characters get a "★ 你" gold badge.
+ * Combined HUD for a single fighter: light card background + name + resource bars.
+ * Player characters get a gold badge.
  */
 export class FighterHUD extends Container {
   private namePlate: NamePlate;
@@ -14,13 +14,13 @@ export class FighterHUD extends Container {
   constructor(name: string, isPlayer: boolean, maxHp: number, maxMp: number) {
     super();
 
-    // Dark semi-transparent card background
+    // Light semi-transparent card background
     const cardW = 130;
     const cardH = 52;
     this.cardBg = new Graphics();
     this.cardBg.roundRect(-cardW / 2, -4, cardW, cardH, 4);
-    this.cardBg.fill({ color: 0x0a0618, alpha: 0.65 });
-    this.cardBg.stroke({ color: 0x3a2a5a, width: 1, alpha: 0.4 });
+    this.cardBg.fill({ color: 0xF0EBE0, alpha: 0.65 });
+    this.cardBg.stroke({ color: 0xC8B898, width: 1, alpha: 0.4 });
     this.addChild(this.cardBg);
 
     this.namePlate = new NamePlate(name, isPlayer);
@@ -34,7 +34,7 @@ export class FighterHUD extends Container {
         style: new TextStyle({
           fontFamily: '"PingFang SC", sans-serif',
           fontSize: 9,
-          fill: 0xffd700,
+          fill: 0xD4A010,
           fontWeight: 'bold',
         }),
       });

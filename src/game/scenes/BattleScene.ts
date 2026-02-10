@@ -22,6 +22,13 @@ const CLASS_TO_ASSET: Record<CharacterClass, CharacterName> = {
   'archer': 'archer',
 };
 
+/** Per-character battle scale — normalize for different canvas sizes (knight=128px, others=96px) */
+const BATTLE_SCALE: Record<CharacterClass, number> = {
+  'knight': 1.8,           // 128px × 1.8 = 230px (mounted + lance fits arena)
+  'armored-warrior': 2.4,  // 96px × 2.4 = 230px
+  'archer': 2.4,           // 96px × 2.4 = 230px
+};
+
 interface SpriteEntry {
   sprite: CharacterSprite;
   hud: FighterHUD;
@@ -137,7 +144,8 @@ export class BattleScene extends BaseScene {
       const assetName = CLASS_TO_ASSET[fighter.characterClass];
       const assets = this.assetLoader.getCharacter(assetName);
 
-      const charSprite = new CharacterSprite(assets, 3);
+      const scale = BATTLE_SCALE[fighter.characterClass] ?? 2.4;
+      const charSprite = new CharacterSprite(assets, scale);
       charSprite.setPosition(pos.x, pos.y);
       charSprite.setDirection(pos.dir);
       charSprite.play('idle');
@@ -165,10 +173,10 @@ export class BattleScene extends BaseScene {
     // --- Bottom Panel (y=375-540, full width) ---
     const bottomPanel = new Graphics();
     bottomPanel.rect(0, 375, 960, 165);
-    bottomPanel.fill({ color: 0x0a0618, alpha: 0.8 });
-    // Gold top border
+    bottomPanel.fill({ color: 0xE8E0D4, alpha: 0.8 });
+    // Warm top border
     bottomPanel.rect(0, 375, 960, 2);
-    bottomPanel.fill({ color: 0xc8a050, alpha: 0.6 });
+    bottomPanel.fill({ color: 0xC8B898, alpha: 0.6 });
     this.container.addChild(bottomPanel);
 
     // Action panel (left side of bottom panel)
