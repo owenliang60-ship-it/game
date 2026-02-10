@@ -9,7 +9,7 @@ import { Easing } from '../animation/Easing';
 export class DefenseOverlay extends Container {
   private shield: Graphics;
 
-  constructor(color = 0x4488FF) {
+  constructor(color = 0x2060AA) {
     super();
 
     this.shield = new Graphics();

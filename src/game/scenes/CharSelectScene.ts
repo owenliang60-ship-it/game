@@ -164,7 +164,7 @@ export class CharSelectScene extends BaseScene {
     // Stats (with VT323 font for values)
     const stats = [
       { label: 'HP', value: char.hp, color: 0x22CC44 },
-      { label: 'MP', value: char.mp, color: 0x4488FF },
+      { label: 'MP', value: char.mp, color: 0x2266CC },
       { label: 'ATK', value: char.atk, color: 0xFF4444 },
       { label: 'DEF', value: char.def, color: 0xCCAA44 },
       { label: 'AGI', value: char.agi, color: 0x88CC88 },

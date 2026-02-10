@@ -147,7 +147,7 @@ export class ResourceBars extends Container {
     this.hpBar.position.set(0, 0);
     this.addChild(this.hpBar);
 
-    this.mpBar = new ResourceBar({ width: barWidth, height: h, color: 0x4488FF, label: 'MP', maxValue: maxMp });
+    this.mpBar = new ResourceBar({ width: barWidth, height: h, color: 0x2266CC, label: 'MP', maxValue: maxMp });
     this.mpBar.position.set(0, h + gap);
     this.addChild(this.mpBar);
 

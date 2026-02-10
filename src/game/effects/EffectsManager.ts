@@ -45,7 +45,7 @@ export class EffectsManager {
     flash.destroy();
   }
 
-  async showSlash(x: number, y: number, color = 0xFFFFFF): Promise<void> {
+  async showSlash(x: number, y: number, color = 0x5A4830): Promise<void> {
     const slash = new SlashEffect(color);
     slash.position.set(x, y - 30);
     this.layer.addChild(slash);
@@ -63,7 +63,7 @@ export class EffectsManager {
     proj.destroy();
   }
 
-  showDefenseOverlay(x: number, y: number, color = 0x4488FF): DefenseOverlay {
+  showDefenseOverlay(x: number, y: number, color = 0x2060AA): DefenseOverlay {
     const overlay = new DefenseOverlay(color);
     overlay.position.set(x, y);
     this.layer.addChild(overlay);
