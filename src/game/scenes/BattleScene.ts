@@ -13,6 +13,7 @@ import { FighterHUD } from '../ui/FighterHUD';
 import { BattleDirector } from '../BattleDirector';
 import { EffectsManager } from '../effects/EffectsManager';
 import { BattlefieldBackground } from './BattlefieldBackground';
+import { drawRPGPanel } from '../ui/RPGPanel';
 import type { SceneManager } from '../SceneManager';
 
 /** Map CharacterClass to asset name */
@@ -49,6 +50,7 @@ export class BattleScene extends BaseScene {
   private sceneManager: SceneManager;
   private battle!: BattleManager;
   private sprites = new Map<CharacterId, SpriteEntry>();
+  private breatheTime = 0;
 
   // UI components
   private roundInfoBar!: RoundInfoBar;
@@ -77,6 +79,7 @@ export class BattleScene extends BaseScene {
     this.battle = new BattleManager(config);
     this.sprites.clear();
     this.container.removeChildren();
+    this.breatheTime = 0;
 
     this.buildScene();
     this.subscribeToEvents();
@@ -103,7 +106,6 @@ export class BattleScene extends BaseScene {
   getSpriteContainers(): Map<CharacterId, Container> {
     const map = new Map<CharacterId, Container>();
     for (const [id, entry] of this.sprites) {
-      // Only include alive fighters
       try {
         const fighter = this.battle.getFighter(id);
         if (fighter.hp > 0) {
@@ -172,17 +174,43 @@ export class BattleScene extends BaseScene {
 
     // --- Bottom Panel (y=375-540, full width) ---
     const bottomPanel = new Graphics();
-    bottomPanel.rect(0, 375, 960, 165);
-    bottomPanel.fill({ color: 0xE8E0D4, alpha: 0.8 });
-    // Warm top border
-    bottomPanel.rect(0, 375, 960, 2);
+    drawRPGPanel(bottomPanel, {
+      width: 960, height: 165, radius: 0,
+      fillColor: 0xE8E0D4, fillAlpha: 0.85,
+      shadow: false, innerFrame: false, cornerDots: false,
+    });
+    bottomPanel.position.set(0, 375);
+    // Decorative top border with accent
+    bottomPanel.rect(0, 0, 960, 2);
     bottomPanel.fill({ color: 0xC8B898, alpha: 0.6 });
+    bottomPanel.rect(4, 2, 952, 1);
+    bottomPanel.fill({ color: 0xD4C8B0, alpha: 0.3 });
     this.container.addChild(bottomPanel);
 
     // Action panel (left side of bottom panel)
     this.actionPanel.position.set(0, 375);
     this.actionPanel.showAiWaiting();
     this.container.addChild(this.actionPanel);
+
+    // Vertical decorative separator between ActionPanel and BattleLog
+    const panelSeparator = new Graphics();
+    panelSeparator.rect(660, 380, 1, 150);
+    panelSeparator.fill({ color: 0xD4C8B0, alpha: 0.35 });
+    // Top diamond
+    panelSeparator.moveTo(660.5, 378);
+    panelSeparator.lineTo(663, 380.5);
+    panelSeparator.lineTo(660.5, 383);
+    panelSeparator.lineTo(658, 380.5);
+    panelSeparator.closePath();
+    panelSeparator.fill({ color: 0xC8A050, alpha: 0.4 });
+    // Bottom diamond
+    panelSeparator.moveTo(660.5, 528);
+    panelSeparator.lineTo(663, 530.5);
+    panelSeparator.lineTo(660.5, 533);
+    panelSeparator.lineTo(658, 530.5);
+    panelSeparator.closePath();
+    panelSeparator.fill({ color: 0xC8A050, alpha: 0.4 });
+    this.container.addChild(panelSeparator);
 
     // Battle log (right side of bottom panel)
     this.battleLog = new BattleLog(280, 160, 10);
@@ -197,7 +225,6 @@ export class BattleScene extends BaseScene {
     const fighters = this.battle.getState().fighters;
 
     if (count === 2) {
-      // 2-player mode: left vs right within arena
       const groundY = 250;
       return [
         { x: 250, y: groundY, dir: 'east' },
@@ -205,7 +232,6 @@ export class BattleScene extends BaseScene {
       ];
     }
 
-    // 3+ players: player at bottom of arena, opponents at top
     const positions: { x: number; y: number; dir: Direction }[] = [];
     const playerIndex = fighters.findIndex(f => f.isPlayer);
 
@@ -343,7 +369,6 @@ export class BattleScene extends BaseScene {
         this.battleLog.add(`=== ${winnerName} 获胜! (${e.data.rounds} 回合) ===`, 'system');
       }
 
-      // Navigate to result scene after a brief pause
       setTimeout(() => {
         this.sceneManager.goTo('result', {
           winner: winnerName,
@@ -365,9 +390,24 @@ export class BattleScene extends BaseScene {
   }
 
   override update(deltaMs: number): void {
+    this.breatheTime += deltaMs;
+
+    let index = 0;
     for (const entry of this.sprites.values()) {
       entry.sprite.update(deltaMs);
       entry.hud.updateBlink(deltaMs);
+
+      // Idle breathing: subtle Y oscillation
+      try {
+        const fighter = this.battle.getFighter(entry.fighterId);
+        if (fighter.hp > 0) {
+          const breatheOffset = Math.sin(this.breatheTime * 0.002 + index) * 1.5;
+          entry.sprite.setPosition(entry.baseX, entry.baseY + breatheOffset);
+        }
+      } catch {
+        // Fighter may not exist during cleanup
+      }
+      index++;
     }
   }
 }

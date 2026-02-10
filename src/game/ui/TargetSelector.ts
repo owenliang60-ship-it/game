@@ -37,7 +37,7 @@ export class TargetSelector extends Container {
     super();
 
     const style = new TextStyle({
-      fontFamily: '"VT323", "Microsoft YaHei", sans-serif',
+      fontFamily: 'zpix, "VT323", sans-serif',
       fontSize: 14,
       fill: 0xB08000,
     });

@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { drawCornerOrnament } from '../ui/CornerOrnament';
 
 const GAME_WIDTH = 960;
 const GAME_HEIGHT = 540;
@@ -7,9 +8,8 @@ const GAME_HEIGHT = 540;
  * Multi-layered battlefield background with light atmosphere.
  * Layers (bottom to top):
  * 1. Soft sky gradient (light blue center → edges)
- * 2. Ground plane (warm sand, y=280-440)
- * 3. (vignette removed for bright theme)
- * 4. Warm frame border
+ * 2. Ground plane with subtle grid lines
+ * 3. Warm frame border with extended corner ornaments
  */
 export class BattlefieldBackground extends Container {
   constructor() {
@@ -50,7 +50,6 @@ export class BattlefieldBackground extends Container {
     const ground = new Graphics();
 
     // Subtle ground area (y=280 to y=440)
-    // Warm sand strip representing the battle floor
     const groundTop = 280;
     const groundBottom = 440;
     const strips = 6;
@@ -60,7 +59,6 @@ export class BattlefieldBackground extends Container {
       const y = groundTop + (groundBottom - groundTop) * t;
       const h = (groundBottom - groundTop) / strips;
 
-      // Slightly visible warm sand tones
       const alpha = 0.03 + 0.04 * Math.sin(t * Math.PI);
       ground.rect(0, y, GAME_WIDTH, h);
       ground.fill({ color: 0xC0B898, alpha });
@@ -69,6 +67,17 @@ export class BattlefieldBackground extends Container {
     // Horizontal line at ground level
     ground.rect(60, 290, GAME_WIDTH - 120, 1);
     ground.fill({ color: 0xB8A888, alpha: 0.3 });
+
+    // Subtle grid lines on ground area (80px spacing)
+    const gridSpacing = 80;
+    for (let x = gridSpacing; x < GAME_WIDTH; x += gridSpacing) {
+      ground.rect(x, groundTop, 1, groundBottom - groundTop);
+      ground.fill({ color: 0xB8A888, alpha: 0.06 });
+    }
+    for (let y = groundTop; y < groundBottom; y += gridSpacing) {
+      ground.rect(0, y, GAME_WIDTH, 1);
+      ground.fill({ color: 0xB8A888, alpha: 0.06 });
+    }
 
     this.addChild(ground);
   }
@@ -80,47 +89,51 @@ export class BattlefieldBackground extends Container {
   private buildBorder(): void {
     const border = new Graphics();
 
-    // Warm frame border
-    border.rect(0, 0, GAME_WIDTH, 2);
+    // Warm frame border (3px)
+    border.rect(0, 0, GAME_WIDTH, 3);
     border.fill({ color: 0xB8A888, alpha: 0.6 });
 
-    border.rect(0, GAME_HEIGHT - 2, GAME_WIDTH, 2);
+    border.rect(0, GAME_HEIGHT - 3, GAME_WIDTH, 3);
     border.fill({ color: 0xB8A888, alpha: 0.6 });
 
-    border.rect(0, 0, 2, GAME_HEIGHT);
+    border.rect(0, 0, 3, GAME_HEIGHT);
     border.fill({ color: 0xB8A888, alpha: 0.6 });
 
-    border.rect(GAME_WIDTH - 2, 0, 2, GAME_HEIGHT);
+    border.rect(GAME_WIDTH - 3, 0, 3, GAME_HEIGHT);
     border.fill({ color: 0xB8A888, alpha: 0.6 });
 
-    // Inner corner accents
-    const accentLen = 30;
+    // Inner corner accents (extended to 50px + diagonal decorations)
+    const accentLen = 50;
     const accentColor = 0xC8B898;
-    const accentAlpha = 0.4;
 
+    // Corner ornaments using L-shaped ornaments
+    drawCornerOrnament(border, 5, 5, accentLen, accentColor, 0.4);
+    drawCornerOrnament(border, GAME_WIDTH - 5, 5, accentLen, accentColor, 0.4, true);
+    drawCornerOrnament(border, 5, GAME_HEIGHT - 5, accentLen, accentColor, 0.4, false, true);
+    drawCornerOrnament(border, GAME_WIDTH - 5, GAME_HEIGHT - 5, accentLen, accentColor, 0.4, true, true);
+
+    // Small diagonal accent at each corner (3px line at 45deg)
+    const diag = 8;
     // Top-left
-    border.rect(4, 4, accentLen, 1);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-    border.rect(4, 4, 1, accentLen);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-
+    for (let d = 0; d < diag; d++) {
+      border.rect(5 + accentLen + 2 + d, 5 + d, 1, 1);
+      border.fill({ color: accentColor, alpha: 0.25 });
+    }
     // Top-right
-    border.rect(GAME_WIDTH - 4 - accentLen, 4, accentLen, 1);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-    border.rect(GAME_WIDTH - 5, 4, 1, accentLen);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-
+    for (let d = 0; d < diag; d++) {
+      border.rect(GAME_WIDTH - 5 - accentLen - 2 - d, 5 + d, 1, 1);
+      border.fill({ color: accentColor, alpha: 0.25 });
+    }
     // Bottom-left
-    border.rect(4, GAME_HEIGHT - 5, accentLen, 1);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-    border.rect(4, GAME_HEIGHT - 4 - accentLen, 1, accentLen);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-
+    for (let d = 0; d < diag; d++) {
+      border.rect(5 + accentLen + 2 + d, GAME_HEIGHT - 5 - d, 1, 1);
+      border.fill({ color: accentColor, alpha: 0.25 });
+    }
     // Bottom-right
-    border.rect(GAME_WIDTH - 4 - accentLen, GAME_HEIGHT - 5, accentLen, 1);
-    border.fill({ color: accentColor, alpha: accentAlpha });
-    border.rect(GAME_WIDTH - 5, GAME_HEIGHT - 4 - accentLen, 1, accentLen);
-    border.fill({ color: accentColor, alpha: accentAlpha });
+    for (let d = 0; d < diag; d++) {
+      border.rect(GAME_WIDTH - 5 - accentLen - 2 - d, GAME_HEIGHT - 5 - d, 1, 1);
+      border.fill({ color: accentColor, alpha: 0.25 });
+    }
 
     this.addChild(border);
   }

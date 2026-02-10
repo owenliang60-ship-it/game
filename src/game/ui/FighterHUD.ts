@@ -1,9 +1,10 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { NamePlate } from './NamePlate';
 import { ResourceBars } from './ResourceBars';
+import { drawRPGPanel } from './RPGPanel';
 
 /**
- * Combined HUD for a single fighter: light card background + name + resource bars.
+ * Combined HUD for a single fighter: RPG panel card + name + resource bars.
  * Player characters get a gold badge.
  */
 export class FighterHUD extends Container {
@@ -14,13 +15,21 @@ export class FighterHUD extends Container {
   constructor(name: string, isPlayer: boolean, maxHp: number, maxMp: number) {
     super();
 
-    // Light semi-transparent card background
+    // RPG panel card background (lightweight: no shadow, no corner dots)
     const cardW = 130;
     const cardH = 52;
     this.cardBg = new Graphics();
-    this.cardBg.roundRect(-cardW / 2, -4, cardW, cardH, 4);
-    this.cardBg.fill({ color: 0xF0EBE0, alpha: 0.65 });
-    this.cardBg.stroke({ color: 0xB0A080, width: 1, alpha: 0.5 });
+    drawRPGPanel(this.cardBg, {
+      width: cardW,
+      height: cardH,
+      radius: 4,
+      fillColor: 0xF0EBE0,
+      fillAlpha: 0.7,
+      shadow: false,
+      innerFrame: false,
+      cornerDots: false,
+    });
+    this.cardBg.position.set(-cardW / 2, -4);
     this.addChild(this.cardBg);
 
     this.namePlate = new NamePlate(name, isPlayer);
@@ -32,7 +41,7 @@ export class FighterHUD extends Container {
       const badge = new Text({
         text: '★ 你',
         style: new TextStyle({
-          fontFamily: '"PingFang SC", sans-serif',
+          fontFamily: 'zpix, "PingFang SC", sans-serif',
           fontSize: 9,
           fill: 0xD4A010,
           fontWeight: 'bold',

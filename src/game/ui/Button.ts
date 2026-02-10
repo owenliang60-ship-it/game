@@ -1,4 +1,5 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { drawRPGPanel } from './RPGPanel';
 
 export interface ButtonConfig {
   text: string;
@@ -13,24 +14,15 @@ export interface ButtonConfig {
   primary?: boolean;
 }
 
-// Gradient layer colors for normal buttons (light theme)
-const GRAD_TOP = 0xE8E0D0;
-const GRAD_MID = 0xDCD4C4;
-const GRAD_BOT = 0xD0C8B8;
-
-// Gradient layer colors for primary buttons (gold theme)
-const PRIM_TOP = 0xE8C848;
-const PRIM_MID = 0xD4B438;
-const PRIM_BOT = 0xC0A028;
-
 /**
- * Reusable PixiJS button with 3-layer gradient, border, and hover/press/disabled states.
+ * RPG-styled button with bevel, shadow, and hover/press/disabled states.
  */
 export class Button extends Container {
   private bg: Graphics;
   private labelText: Text;
   private config: Required<ButtonConfig>;
   private _enabled = true;
+  private hoverGlow: Graphics;
 
   constructor(config: ButtonConfig) {
     super();
@@ -55,10 +47,15 @@ export class Button extends Container {
     this.drawBg('normal');
     this.addChild(this.bg);
 
+    // Hover glow line (hidden by default)
+    this.hoverGlow = new Graphics();
+    this.hoverGlow.alpha = 0;
+    this.addChild(this.hoverGlow);
+
     // Label
     const fontFamily = isPrimary
-      ? '"Press Start 2P", "PingFang SC", monospace'
-      : '"PingFang SC", "Microsoft YaHei", sans-serif';
+      ? 'zpix, "Press Start 2P", monospace'
+      : 'zpix, "PingFang SC", sans-serif';
     const style = new TextStyle({
       fontFamily,
       fontSize: this.config.fontSize,
@@ -105,87 +102,76 @@ export class Button extends Container {
     this.bg.clear();
 
     if (state === 'disabled') {
-      this.bg.roundRect(0, 0, width, height, 4);
+      this.bg.roundRect(0, 0, width, height, 3);
       this.bg.fill({ color: this.config.disabledFill, alpha: 0.85 });
       this.bg.stroke({ color: 0xC0C0C0, width: 1 });
       return;
     }
 
-    const isPrimary = primary;
-    let top: number, mid: number, bot: number;
-    let borderCol: number;
-    let borderWidth: number;
-
-    switch (state) {
-      case 'hover':
-        top = isPrimary ? 0xF0D858 : 0xF0E8D8;
-        mid = isPrimary ? 0xDCC048 : 0xE4DCD0;
-        bot = isPrimary ? 0xC8AC30 : 0xD8D0C0;
-        borderCol = isPrimary ? 0xD4A010 : 0xC8B898;
-        borderWidth = 2;
-        break;
-      case 'press':
-        top = isPrimary ? 0xB89820 : 0xC8C0B0;
-        mid = isPrimary ? 0xA88818 : 0xBCB4A4;
-        bot = isPrimary ? 0x987810 : 0xB0A898;
-        borderCol = 0xD4A010;
-        borderWidth = 2;
-        break;
-      default: // normal
-        top = isPrimary ? PRIM_TOP : GRAD_TOP;
-        mid = isPrimary ? PRIM_MID : GRAD_MID;
-        bot = isPrimary ? PRIM_BOT : GRAD_BOT;
-        borderCol = this.config.borderColor;
-        borderWidth = 2;
+    if (state === 'press') {
+      // Pressed: inverted bevel (top=shadow, bottom=highlight) + y+1
+      const fillColor = primary ? 0xC0A028 : 0xC8C0B0;
+      drawRPGPanel(this.bg, {
+        width, height, radius: 3,
+        fillColor, fillAlpha: 0.92,
+        shadow: false, innerFrame: false, cornerDots: false,
+      });
+      // Override bevel: dark top, light bottom (press effect)
+      this.bg.rect(4, 1, width - 8, 1);
+      this.bg.fill({ color: 0xC8B898, alpha: 0.5 });
+      this.bg.rect(4, height - 2, width - 8, 1);
+      this.bg.fill({ color: 0xFFFAF0, alpha: 0.4 });
+      return;
     }
-
-    // 3-layer gradient simulation: top strip, middle, bottom strip
-    const topH = Math.floor(height * 0.3);
-    const botH = Math.floor(height * 0.3);
-    const midH = height - topH - botH;
-
-    // Full rounded background (bottom layer)
-    this.bg.roundRect(0, 0, width, height, 4);
-    this.bg.fill({ color: bot, alpha: 0.9 });
-
-    // Middle strip
-    this.bg.rect(1, topH, width - 2, midH);
-    this.bg.fill({ color: mid, alpha: 0.9 });
-
-    // Top strip
-    this.bg.roundRect(0, 0, width, topH + 2, 4);
-    this.bg.fill({ color: top, alpha: 0.85 });
-
-    // Border
-    this.bg.roundRect(0, 0, width, height, 4);
-    this.bg.stroke({ color: borderCol, width: borderWidth, alpha: 0.7 });
 
     if (state === 'hover') {
-      this.position.y -= 0; // keep position stable
+      const fillColor = primary ? 0xE8D050 : 0xE8E0D0;
+      drawRPGPanel(this.bg, {
+        width, height, radius: 3,
+        fillColor, fillAlpha: 0.94,
+        shadow: true, innerFrame: false, cornerDots: false,
+        accentColor: primary ? 0xD4A010 : 0xC8A050,
+      });
+      return;
     }
+
+    // Normal
+    const fillColor = primary ? 0xE8C848 : 0xE0D8C8;
+    drawRPGPanel(this.bg, {
+      width, height, radius: 3,
+      fillColor, fillAlpha: 0.92,
+      shadow: true, innerFrame: false, cornerDots: false,
+    });
   }
 
   private onHover = () => {
     if (!this._enabled) return;
     this.drawBg('hover');
     this.y -= 1;
+    // Show hover glow line
+    this.hoverGlow.clear();
+    this.hoverGlow.rect(4, 2, this.config.width - 8, 1);
+    this.hoverGlow.fill({ color: 0xD4A010, alpha: 0.6 });
+    this.hoverGlow.alpha = 1;
   };
 
   private onOut = () => {
     if (!this._enabled) return;
     this.drawBg('normal');
     this.y += 1;
+    this.hoverGlow.alpha = 0;
   };
 
   private onPress = () => {
     if (!this._enabled) return;
     this.drawBg('press');
-    this.scale.set(0.97);
+    this.y += 1;
   };
 
   private onRelease = () => {
     if (!this._enabled) return;
     this.drawBg('normal');
-    this.scale.set(1);
+    this.y -= 1;
+    this.hoverGlow.alpha = 0;
   };
 }

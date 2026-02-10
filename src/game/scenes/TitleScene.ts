@@ -2,11 +2,14 @@ import { Application, Text, TextStyle, Graphics, Sprite } from 'pixi.js';
 import { BaseScene } from './BaseScene';
 import { Button } from '../ui/Button';
 import { OrnamentDivider } from '../ui/OrnamentDivider';
+import { FrameBorder } from '../ui/FrameBorder';
+import { TweenManager } from '../animation/TweenManager';
+import { Easing } from '../animation/Easing';
 import type { SceneManager } from '../SceneManager';
 import type { AssetLoader, CharacterName } from '../AssetLoader';
 
 /**
- * Title screen: light background + pixel font title + character previews + ornate dividers.
+ * Title screen: FrameBorder + multi-layer glow + pixel font title + character previews.
  */
 export class TitleScene extends BaseScene {
   private sceneManager: SceneManager;
@@ -27,24 +30,45 @@ export class TitleScene extends BaseScene {
     bg.fill(0xE8E0D4);
     this.container.addChild(bg);
 
-    // Soft warm glow in center (very subtle)
-    const glow = new Graphics();
-    glow.ellipse(480, 260, 400, 250);
-    glow.fill({ color: 0xF5EDE0, alpha: 0.6 });
-    this.container.addChild(glow);
+    // Multi-layer glow (3 layers, decreasing)
+    const glow3 = new Graphics();
+    glow3.ellipse(480, 260, 420, 260);
+    glow3.fill({ color: 0xF0E8D8, alpha: 0.35 });
+    this.container.addChild(glow3);
     const glow2 = new Graphics();
-    glow2.ellipse(480, 260, 250, 150);
-    glow2.fill({ color: 0xFAF4E8, alpha: 0.4 });
+    glow2.ellipse(480, 260, 300, 180);
+    glow2.fill({ color: 0xF5EDE0, alpha: 0.5 });
     this.container.addChild(glow2);
+    const glow1 = new Graphics();
+    glow1.ellipse(480, 260, 180, 110);
+    glow1.fill({ color: 0xFAF4E8, alpha: 0.4 });
+    this.container.addChild(glow1);
 
-    // Top ornament divider
-    const topDivider = new OrnamentDivider(500);
+    // Decorative frame border
+    const frame = new FrameBorder();
+    this.container.addChild(frame);
+
+    // Top ornament divider (ornate variant)
+    const topDivider = new OrnamentDivider(500, 'ornate');
     topDivider.position.set(230, 110);
     this.container.addChild(topDivider);
 
-    // Title: Press Start 2P for pixel aesthetic
+    // Title shadow
+    const shadowStyle = new TextStyle({
+      fontFamily: 'zpix, "Press Start 2P", monospace',
+      fontSize: 32,
+      fill: 0xD4C4A0,
+      letterSpacing: 8,
+    });
+    const titleShadow = new Text({ text: '口头对战', style: shadowStyle });
+    titleShadow.anchor.set(0.5, 0);
+    titleShadow.position.set(482, 127);
+    titleShadow.alpha = 0.5;
+    this.container.addChild(titleShadow);
+
+    // Title: zpix for pixel aesthetic
     const titleStyle = new TextStyle({
-      fontFamily: '"Press Start 2P", monospace',
+      fontFamily: 'zpix, "Press Start 2P", monospace',
       fontSize: 32,
       fill: 0x8B6914,
       letterSpacing: 8,
@@ -55,14 +79,32 @@ export class TitleScene extends BaseScene {
     title.position.set(480, 125);
     this.container.addChild(title);
 
-    // Bottom ornament divider
-    const bottomDivider = new OrnamentDivider(500);
+    // Title entrance animation: fade in + slide up
+    title.alpha = 0;
+    title.y += 15;
+    titleShadow.alpha = 0;
+    titleShadow.y += 15;
+    TweenManager.add({
+      target: title,
+      props: { alpha: 1, y: 125 },
+      duration: 600,
+      easing: Easing.easeOutCubic,
+    });
+    TweenManager.add({
+      target: titleShadow,
+      props: { alpha: 0.5, y: 127 },
+      duration: 600,
+      easing: Easing.easeOutCubic,
+    });
+
+    // Bottom ornament divider (ornate variant)
+    const bottomDivider = new OrnamentDivider(500, 'ornate');
     bottomDivider.position.set(230, 175);
     this.container.addChild(bottomDivider);
 
     // Subtitle
     const subStyle = new TextStyle({
-      fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
+      fontFamily: 'zpix, "PingFang SC", sans-serif',
       fontSize: 16,
       fill: 0x787068,
       letterSpacing: 4,
@@ -94,6 +136,16 @@ export class TitleScene extends BaseScene {
           sprite.position.set(x, y);
           sprite.scale.set(charInfo.scale);
           this.container.addChild(sprite);
+
+          // Staggered fade-in
+          sprite.alpha = 0;
+          TweenManager.add({
+            target: sprite,
+            props: { alpha: 1 },
+            duration: 400,
+            delay: 300 + i * 150,
+            easing: Easing.easeOutQuad,
+          });
         }
       } catch {
         // Fallback: placeholder square
@@ -106,7 +158,7 @@ export class TitleScene extends BaseScene {
 
       // Character label
       const labelStyle = new TextStyle({
-        fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',
+        fontFamily: 'zpix, "PingFang SC", sans-serif',
         fontSize: 11,
         fill: charInfo.color,
       });
@@ -116,7 +168,56 @@ export class TitleScene extends BaseScene {
       this.container.addChild(label);
     }
 
-    // Start button (primary style)
+    // Floating gold particles (subtle ambient)
+    for (let i = 0; i < 4; i++) {
+      const particle = new Graphics();
+      particle.rect(0, 0, 2, 2);
+      particle.fill({ color: 0xC8A050, alpha: 0.4 });
+      const px = 300 + Math.random() * 360;
+      const py = 220 + Math.random() * 100;
+      particle.position.set(px, py);
+      this.container.addChild(particle);
+
+      // Slow float upward
+      particle.alpha = 0;
+      const floatUp = () => {
+        particle.alpha = 0;
+        particle.y = py;
+        TweenManager.add({
+          target: particle,
+          props: { alpha: 0.5 },
+          duration: 800,
+          delay: i * 600,
+          easing: Easing.linear,
+        }).then(() => {
+          TweenManager.add({
+            target: particle,
+            props: { y: py - 30, alpha: 0 },
+            duration: 2000,
+            easing: Easing.linear,
+          }).then(floatUp);
+        });
+      };
+      floatUp();
+    }
+
+    // Darkened corner vignette (subtle)
+    const vignette = new Graphics();
+    // Top-left corner
+    vignette.rect(0, 0, 80, 80);
+    vignette.fill({ color: 0xC8B898, alpha: 0.08 });
+    // Top-right
+    vignette.rect(880, 0, 80, 80);
+    vignette.fill({ color: 0xC8B898, alpha: 0.08 });
+    // Bottom-left
+    vignette.rect(0, 460, 80, 80);
+    vignette.fill({ color: 0xC8B898, alpha: 0.08 });
+    // Bottom-right
+    vignette.rect(880, 460, 80, 80);
+    vignette.fill({ color: 0xC8B898, alpha: 0.08 });
+    this.container.addChild(vignette);
+
+    // Start button (primary style) with breathing animation
     const startBtn = new Button({
       text: '开始游戏',
       width: 200,
@@ -129,6 +230,24 @@ export class TitleScene extends BaseScene {
       this.sceneManager.goTo('playerCount');
     });
     this.container.addChild(startBtn);
+
+    // Breathing scale animation for start button
+    const breathe = () => {
+      TweenManager.add({
+        target: startBtn.scale,
+        props: { x: 1.02, y: 1.02 },
+        duration: 1200,
+        easing: Easing.easeInOutQuad,
+      }).then(() => {
+        TweenManager.add({
+          target: startBtn.scale,
+          props: { x: 1.0, y: 1.0 },
+          duration: 1200,
+          easing: Easing.easeInOutQuad,
+        }).then(breathe);
+      });
+    };
+    breathe();
 
     // Version
     const verStyle = new TextStyle({
