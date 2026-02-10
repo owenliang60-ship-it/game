@@ -59,7 +59,7 @@ export class ResultScene extends BaseScene {
     const bannerStyle = new TextStyle({
       fontFamily: '"Press Start 2P", monospace',
       fontSize: 28,
-      fill: isDraw ? 0x909090 : 0x8B6914,
+      fill: isDraw ? 0x787068 : 0x8B6914,
       letterSpacing: 6,
       stroke: { color: 0xE8E0D4, width: 2 },
     });

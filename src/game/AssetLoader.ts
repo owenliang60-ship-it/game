@@ -47,19 +47,29 @@ export class AssetLoader {
   }
 
   private async loadCharacter(name: string): Promise<CharacterAssets> {
-    // Load manifest
-    const manifestUrl = `src/assets/characters/${name}/manifest.json`;
-    const manifest: CharacterManifest = await (await fetch(manifestUrl)).json();
-
     const rotations: Record<string, Texture> = {};
     const animations: Record<string, Record<string, Texture[]>> = {};
 
+    // Load manifest
+    let manifest: CharacterManifest;
+    try {
+      const manifestUrl = `src/assets/characters/${name}/manifest.json`;
+      manifest = await (await fetch(manifestUrl)).json();
+    } catch (err) {
+      console.error(`[AssetLoader] Failed to load manifest for ${name}:`, err);
+      return { name, rotations, animations };
+    }
+
     // Load rotation textures
     for (const dir of manifest.rotations.directions) {
-      const url = `src/assets/characters/${name}/rotations/${dir}.png`;
-      const texture = await Assets.load(url);
-      texture.source.scaleMode = 'nearest';
-      rotations[dir] = texture;
+      try {
+        const url = `src/assets/characters/${name}/rotations/${dir}.png`;
+        const texture = await Assets.load(url);
+        texture.source.scaleMode = 'nearest';
+        rotations[dir] = texture;
+      } catch (err) {
+        console.error(`[AssetLoader] Failed to load rotation ${dir} for ${name}:`, err);
+      }
     }
 
     // Load animation frames
@@ -67,14 +77,20 @@ export class AssetLoader {
       animations[state] = {};
       for (const [dir, dirInfo] of Object.entries(animInfo.directions)) {
         const frames: Texture[] = [];
-        for (let i = 0; i < dirInfo.frames; i++) {
-          const frameNum = String(i).padStart(3, '0');
-          const url = `src/assets/characters/${name}/animations/${state}/${dir}/frame_${frameNum}.png`;
-          const texture = await Assets.load(url);
-          texture.source.scaleMode = 'nearest';
-          frames.push(texture);
+        try {
+          for (let i = 0; i < dirInfo.frames; i++) {
+            const frameNum = String(i).padStart(3, '0');
+            const url = `src/assets/characters/${name}/animations/${state}/${dir}/frame_${frameNum}.png`;
+            const texture = await Assets.load(url);
+            texture.source.scaleMode = 'nearest';
+            frames.push(texture);
+          }
+        } catch (err) {
+          console.error(`[AssetLoader] Failed to load animation ${state}/${dir} for ${name}:`, err);
         }
-        animations[state][dir] = frames;
+        if (frames.length > 0) {
+          animations[state][dir] = frames;
+        }
       }
     }
 

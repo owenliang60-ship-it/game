@@ -191,6 +191,10 @@ export class ActionResolver {
       targetIds = action.targetIds ?? [];
     }
 
+    if (targetIds.length === 0 && skill?.targetMode !== 'self') {
+      console.warn(`[ActionResolver] Empty targetIds for ${action.type} (skill: ${skill?.id ?? 'none'})`);
+    }
+
     const attackType = skill ? skill.type : actor.basicAttackType;
     const isTrueDamage = skill?.isTrueDamage ?? false;
     const isBasicAttack = action.type === 'basic-attack';

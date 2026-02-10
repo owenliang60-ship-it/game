@@ -258,6 +258,8 @@ export class AIPlayer {
     enemies: Readonly<Fighter>[],
     skill: SkillDef | null
   ): Readonly<Fighter> {
+    if (enemies.length === 0) return fighter;
+
     let bestScore = -Infinity;
     let best = enemies[0];
 
@@ -320,6 +322,7 @@ export class AIPlayer {
     const maxScore = Math.max(...scores);
     const exps = scores.map(s => Math.exp((s - maxScore) / this.temperature));
     const sum = exps.reduce((a, b) => a + b, 0);
+    if (sum === 0) return Math.floor(Math.random() * scores.length);
     const probs = exps.map(e => e / sum);
 
     // Sample from distribution

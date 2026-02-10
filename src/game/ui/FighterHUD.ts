@@ -20,7 +20,7 @@ export class FighterHUD extends Container {
     this.cardBg = new Graphics();
     this.cardBg.roundRect(-cardW / 2, -4, cardW, cardH, 4);
     this.cardBg.fill({ color: 0xF0EBE0, alpha: 0.65 });
-    this.cardBg.stroke({ color: 0xC8B898, width: 1, alpha: 0.4 });
+    this.cardBg.stroke({ color: 0xB0A080, width: 1, alpha: 0.5 });
     this.addChild(this.cardBg);
 
     this.namePlate = new NamePlate(name, isPlayer);
