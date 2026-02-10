@@ -236,16 +236,16 @@ export class BattleScene extends BaseScene {
     const positions: { x: number; y: number; dir: Direction }[] = [];
     const playerIndex = fighters.findIndex(f => f.isPlayer);
 
-    // Side positions for opponents (spread left/right, slightly above player)
+    // Side positions for opponents (spread left/right, above player)
     const sideSlots: { x: number; y: number; dir: Direction }[] = [
-      { x: 200, y: 260, dir: 'east' },   // left enemy faces right
-      { x: 760, y: 260, dir: 'west' },   // right enemy faces left
+      { x: 200, y: 240, dir: 'east' },   // left enemy faces right
+      { x: 760, y: 240, dir: 'west' },   // right enemy faces left
     ];
 
     let opIdx = 0;
     for (let i = 0; i < fighters.length; i++) {
       if (i === playerIndex) {
-        positions.push({ x: 480, y: 340, dir: 'north' });
+        positions.push({ x: 480, y: 300, dir: 'north' });
       } else {
         positions.push(sideSlots[opIdx] ?? { x: 480, y: 200, dir: 'south' });
         opIdx++;
