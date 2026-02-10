@@ -37,7 +37,6 @@ export class AssetLoader {
       const assets = await this.loadCharacter(name);
       this.characters.set(name, assets);
     }
-    console.log(`Loaded ${this.characters.size} characters`);
   }
 
   getCharacter(name: string): CharacterAssets {

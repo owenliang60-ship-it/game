@@ -483,6 +483,206 @@ function testGuerrillaTactics(): void {
 }
 
 // ============================================================
+// Test 9: Multi-target skill — 长虹贯日 hits 2 targets
+// ============================================================
+function testMultiTargetSkill(): void {
+  section('9. Multi-target: 长虹贯日 hits 2 targets, damage + rage correct');
+
+  // Need 3 fighters: archer + 2 targets
+  const config: BattleConfig = {
+    fighters: [
+      { characterClass: 'archer', isPlayer: false, displayName: 'archer-test' },
+      { characterClass: 'knight', isPlayer: false, displayName: 'knight-test' },
+      { characterClass: 'armored-warrior', isPlayer: false, displayName: 'warrior-test' },
+    ],
+  };
+  const state = createBattleState(config);
+  const events = new EventBus();
+  const damageCalc = new DamageCalculator();
+  const statusMgr = new StatusEffectManager();
+  const resolver = new ActionResolver(damageCalc, statusMgr, events);
+
+  const archer = state.fighters[0];
+  const knight = state.fighters[1];
+  const warrior = state.fighters[2];
+
+  state.round = 1;
+
+  // Archer uses 长虹贯日 targeting both enemies
+  archer.chosenAction = {
+    type: 'skill',
+    skillId: 'archer-rainbow-pierce',
+    targetIds: [knight.id, warrior.id],
+  };
+  // Targets use basic attacks (condition: target-not-escaping → met for non-escaping targets)
+  knight.chosenAction = { type: 'basic-attack', targetIds: [archer.id] };
+  warrior.chosenAction = { type: 'basic-attack', targetIds: [archer.id] };
+
+  const knightHpBefore = knight.hp;
+  const warriorHpBefore = warrior.hp;
+
+  let damageEvents = 0;
+  events.on('damage-dealt', () => { damageEvents++; });
+
+  state.phase = 'action-resolve';
+  resolver.resolveRound(state, state.fighters);
+
+  // 长虹贯日: base 30, condition target-not-escaping → met (x1.5)
+  // vs knight (DEF=2): 30 * 1.5 * (10-2)/10 = 36, no precision (archer AGI 6 < knight AGI 7)
+  const expectedKnightDmg = roundTo2(30 * 1.5 * (10 - knight.baseDef) / 10);
+  // vs warrior (DEF=3): 30 * 1.5 * (10-3)/10 + 5*(6-4) = 31.5 + 10 = 41.5
+  const precisionVsWarrior = 5 * Math.max(0, archer.baseAgi - warrior.baseAgi);
+  const expectedWarriorDmg = roundTo2(30 * 1.5 * (10 - warrior.baseDef) / 10 + precisionVsWarrior);
+
+  const actualKnightDmg = roundTo2(knightHpBefore - knight.hp);
+  const actualWarriorDmg = roundTo2(warriorHpBefore - warrior.hp);
+
+  console.log(`  Knight damage: expected ${expectedKnightDmg}, actual ${actualKnightDmg}`);
+  console.log(`  Warrior damage: expected ${expectedWarriorDmg}, actual ${actualWarriorDmg}`);
+  console.log(`  Damage events fired: ${damageEvents}`);
+
+  assert(damageEvents >= 2, `At least 2 damage events fired (got ${damageEvents})`);
+  assert(actualKnightDmg === expectedKnightDmg,
+    `Knight took ${expectedKnightDmg} damage`,
+    `Got ${actualKnightDmg}`);
+  assert(actualWarriorDmg === expectedWarriorDmg,
+    `Warrior took ${expectedWarriorDmg} damage`,
+    `Got ${actualWarriorDmg}`);
+
+  // Both targets should gain rage from damage taken
+  assert(knight.rage > 0, `Knight gained rage from damage: ${knight.rage}`);
+  assert(warrior.rage > 0, `Warrior gained rage from damage: ${warrior.rage}`);
+}
+
+// ============================================================
+// Test 10: Dual-cost skill — 彩虹穿云 requires 20 MP + 30 RAGE
+// ============================================================
+function testDualCostSkill(): void {
+  section('10. Dual cost: 彩虹穿云 requires 20 MP + 30 RAGE');
+
+  const battle = new BattleManager({
+    fighters: [
+      { characterClass: 'archer', isPlayer: false, displayName: '弓箭手' },
+      { characterClass: 'knight', isPlayer: false, displayName: '骑士' },
+    ],
+  });
+
+  const state = battle.getState() as any;
+  const archer = state.fighters[0] as Fighter;
+
+  // Case 1: Has enough MP but not enough RAGE
+  archer.mp = 150;
+  archer.rage = 20; // Need 30
+
+  const actions1 = battle.getAvailableActions(archer.id);
+  const rc1 = actions1.find(a => a.skillId === 'archer-rainbow-cloud');
+  assert(rc1 !== undefined, 'Rainbow Cloud exists in actions');
+  assert(rc1?.affordable === false,
+    'Not affordable with 20 RAGE (need 30)',
+    `affordable=${rc1?.affordable}, reason=${rc1?.reason}`);
+  console.log(`  MP=150, RAGE=20: affordable=${rc1?.affordable}, reason=${rc1?.reason}`);
+
+  // Case 2: Has enough RAGE but not enough MP
+  archer.mp = 10; // Need 20
+  archer.rage = 50;
+
+  const actions2 = battle.getAvailableActions(archer.id);
+  const rc2 = actions2.find(a => a.skillId === 'archer-rainbow-cloud');
+  assert(rc2?.affordable === false,
+    'Not affordable with 10 MP (need 20)',
+    `affordable=${rc2?.affordable}, reason=${rc2?.reason}`);
+  console.log(`  MP=10, RAGE=50: affordable=${rc2?.affordable}, reason=${rc2?.reason}`);
+
+  // Case 3: Has enough of both
+  archer.mp = 150;
+  archer.rage = 30;
+
+  const actions3 = battle.getAvailableActions(archer.id);
+  const rc3 = actions3.find(a => a.skillId === 'archer-rainbow-cloud');
+  assert(rc3?.affordable === true,
+    'Affordable with 150 MP + 30 RAGE',
+    `affordable=${rc3?.affordable}, reason=${rc3?.reason}`);
+  console.log(`  MP=150, RAGE=30: affordable=${rc3?.affordable}`);
+
+  // Case 4: Exact minimum resources
+  archer.mp = 20;
+  archer.rage = 30;
+
+  const actions4 = battle.getAvailableActions(archer.id);
+  const rc4 = actions4.find(a => a.skillId === 'archer-rainbow-cloud');
+  assert(rc4?.affordable === true,
+    'Affordable with exact minimum (20 MP + 30 RAGE)',
+    `affordable=${rc4?.affordable}`);
+  console.log(`  MP=20, RAGE=30 (exact minimum): affordable=${rc4?.affordable}`);
+}
+
+// ============================================================
+// Test 11: Shield Wall (顶盾) DEF+2 lasts 3 rounds then restores
+// ============================================================
+function testShieldWallDuration(): void {
+  section('11. Shield Wall: DEF+2 lasts 3 rounds then restores');
+
+  const { state, f1, statusMgr, events } = createTestBattle(
+    'armored-warrior', // f1: warrior using shield wall
+    'knight',          // f2: target (not relevant here)
+  );
+
+  const baseDef = f1.baseDef; // 3
+  state.round = 1;
+
+  console.log(`  Base DEF: ${baseDef}`);
+
+  // Apply shield wall (duration = 3)
+  const effect: StatusEffect = {
+    type: 'shield-wall',
+    remainingRounds: 3,
+    defBonus: 2,
+  };
+  statusMgr.applyEffect(f1, effect);
+
+  assert(f1.currentDef === baseDef + 2,
+    `DEF immediately after apply: ${baseDef} + 2 = ${baseDef + 2}`,
+    `Got ${f1.currentDef}`);
+  console.log(`  Round 1 (applied): DEF=${f1.currentDef}, remaining=${f1.statusEffects[0]?.remainingRounds}`);
+
+  // Tick 1: round 2 start → remaining goes from 3 to 2
+  state.round = 2;
+  statusMgr.tickEffects(f1, events, state.round);
+  assert(f1.currentDef === baseDef + 2,
+    `DEF after tick 1 (round 2): still ${baseDef + 2}`,
+    `Got ${f1.currentDef}`);
+  assert(f1.statusEffects.some(e => e.type === 'shield-wall' && e.remainingRounds === 2),
+    'Shield wall remaining = 2 after first tick');
+  console.log(`  Round 2 (tick 1): DEF=${f1.currentDef}, remaining=${f1.statusEffects[0]?.remainingRounds}`);
+
+  // Tick 2: round 3 start → remaining goes from 2 to 1
+  state.round = 3;
+  statusMgr.tickEffects(f1, events, state.round);
+  assert(f1.currentDef === baseDef + 2,
+    `DEF after tick 2 (round 3): still ${baseDef + 2}`,
+    `Got ${f1.currentDef}`);
+  assert(f1.statusEffects.some(e => e.type === 'shield-wall' && e.remainingRounds === 1),
+    'Shield wall remaining = 1 after second tick');
+  console.log(`  Round 3 (tick 2): DEF=${f1.currentDef}, remaining=${f1.statusEffects[0]?.remainingRounds}`);
+
+  // Tick 3: round 4 start → remaining goes from 1 to 0 → expired
+  let expired = false;
+  events.on('status-effect-expired', (e) => {
+    if (e.data.effectType === 'shield-wall') expired = true;
+  });
+
+  state.round = 4;
+  statusMgr.tickEffects(f1, events, state.round);
+  assert(expired, 'Shield wall expired event emitted');
+  assert(f1.currentDef === baseDef,
+    `DEF restored to base ${baseDef} after expiration`,
+    `Got ${f1.currentDef}`);
+  assert(!f1.statusEffects.some(e => e.type === 'shield-wall'),
+    'Shield wall removed from status effects');
+  console.log(`  Round 4 (tick 3): DEF=${f1.currentDef}, expired=${expired}`);
+}
+
+// ============================================================
 // Main
 // ============================================================
 function main(): void {
@@ -499,6 +699,9 @@ function main(): void {
   testTrueDamage();
   testWhipOneTime();
   testGuerrillaTactics();
+  testMultiTargetSkill();
+  testDualCostSkill();
+  testShieldWallDuration();
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`RESULTS: ${passCount}/${testCount} passed, ${failCount} failed`);
