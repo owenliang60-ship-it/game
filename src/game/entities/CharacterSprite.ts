@@ -53,6 +53,11 @@ export class CharacterSprite {
   get baseX(): number { return this._baseX; }
   get baseY(): number { return this._baseY; }
 
+  /** Apply a visual Y offset for idle breathing (does not affect base position or tweens) */
+  setBreatheOffset(offsetY: number): void {
+    this.sprite.y = offsetY;
+  }
+
   setDirection(dir: Direction) {
     this.currentDirection = dir;
     this.currentFrame = 0;

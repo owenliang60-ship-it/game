@@ -397,12 +397,12 @@ export class BattleScene extends BaseScene {
       entry.sprite.update(deltaMs);
       entry.hud.updateBlink(deltaMs);
 
-      // Idle breathing: subtle Y oscillation
+      // Idle breathing: subtle Y oscillation on inner sprite (doesn't interfere with lunge tweens)
       try {
         const fighter = this.battle.getFighter(entry.fighterId);
         if (fighter.hp > 0) {
           const breatheOffset = Math.sin(this.breatheTime * 0.002 + index) * 1.5;
-          entry.sprite.setPosition(entry.baseX, entry.baseY + breatheOffset);
+          entry.sprite.setBreatheOffset(breatheOffset);
         }
       } catch {
         // Fighter may not exist during cleanup
