@@ -11,7 +11,7 @@ export class ProjectileEffect extends Container {
   private trail: Graphics;
   private arrowColor: number;
 
-  constructor(color = 0xFFD700) {
+  constructor(color = 0xB8960C) {
     super();
     this.arrowColor = color;
 

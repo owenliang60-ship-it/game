@@ -73,10 +73,10 @@ export class TitleScene extends BaseScene {
     this.container.addChild(subtitle);
 
     // Character previews (3 sprites with labels)
-    const characters: { name: CharacterName; label: string; color: number }[] = [
-      { name: 'knight', label: '骑士', color: 0x5A9BD5 },
-      { name: 'armored-warrior', label: '装甲战士', color: 0xD45A5A },
-      { name: 'archer', label: '弓箭手', color: 0x5ABD6A },
+    const characters: { name: CharacterName; label: string; color: number; scale: number }[] = [
+      { name: 'knight', label: '骑士', color: 0x5A9BD5, scale: 0.49 },
+      { name: 'armored-warrior', label: '装甲战士', color: 0xD45A5A, scale: 0.65 },
+      { name: 'archer', label: '弓箭手', color: 0x5ABD6A, scale: 0.65 },
     ];
 
     const charStartX = 480 - (characters.length - 1) * 120;
@@ -92,7 +92,7 @@ export class TitleScene extends BaseScene {
           const sprite = new Sprite(texture);
           sprite.anchor.set(0.5, 0.5);
           sprite.position.set(x, y);
-          sprite.scale.set(0.65);
+          sprite.scale.set(charInfo.scale);
           this.container.addChild(sprite);
         }
       } catch {

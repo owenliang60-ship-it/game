@@ -227,7 +227,7 @@ export class BattleDirector {
       await this.effects.showProjectile(
         attackerEntry.baseX, attackerEntry.baseY,
         targetEntry.baseX, targetEntry.baseY,
-        result.isTrueDamage ? 0xFF00FF : 0xFFD700,
+        result.isTrueDamage ? 0xFF00FF : 0xB8960C,
       );
     }
 

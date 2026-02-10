@@ -31,7 +31,7 @@ export class DamageNumber extends Container {
       fontSize,
       fill: color,
       fontWeight: 'bold',
-      stroke: { color: 0x000000, width: 3 },
+      stroke: { color: 0x3A3530, width: 2 },
     });
 
     this.text = new Text({ text: value, style });

@@ -48,11 +48,11 @@ export class WhipAuraEffect extends Container {
 
       this.aura.moveTo(x1, y1);
       this.aura.lineTo(x2, y2);
-      this.aura.stroke({ color: 0xFFD700, width: 2, alpha: 0.6 });
+      this.aura.stroke({ color: 0xB8960C, width: 2, alpha: 0.6 });
     }
 
     // Central glow
     this.aura.ellipse(0, 0, 20, 8);
-    this.aura.fill({ color: 0xFFD700, alpha: 0.15 });
+    this.aura.fill({ color: 0xB8960C, alpha: 0.15 });
   }
 }

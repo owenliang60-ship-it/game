@@ -11,6 +11,13 @@ const NAME_TO_ASSET: Record<string, CharacterName> = {
   '弓箭手': 'archer',
 };
 
+/** Per-character result scale (knight=128px canvas needs smaller scale) */
+const RESULT_SCALE: Record<string, number> = {
+  'knight': 0.71,           // 128px × 0.71 ≈ 91px
+  'armored-warrior': 0.95,  // 96px × 0.95 ≈ 91px
+  'archer': 0.95,           // 96px × 0.95 ≈ 91px
+};
+
 /**
  * Battle result screen: winner sprite + stats panel + ornate dividers.
  */
@@ -82,7 +89,7 @@ export class ResultScene extends BaseScene {
             const sprite = new Sprite(texture);
             sprite.anchor.set(0.5, 0.5);
             sprite.position.set(480, 220);
-            sprite.scale.set(0.95);
+            sprite.scale.set(RESULT_SCALE[assetName] ?? 0.95);
             this.container.addChild(sprite);
           }
         } catch {

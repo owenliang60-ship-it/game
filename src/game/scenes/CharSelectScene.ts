@@ -17,12 +17,13 @@ interface CharCardInfo {
   agi: number;
   skills: number;
   color: number;
+  spriteScale: number;
 }
 
 const CHARACTERS: CharCardInfo[] = [
-  { characterClass: 'knight', name: '骑士', assetName: 'knight', hp: 300, mp: 150, atk: 30, def: 2, agi: 7, skills: 6, color: 0x5A9BD5 },
-  { characterClass: 'armored-warrior', name: '装甲战士', assetName: 'armored-warrior', hp: 350, mp: 120, atk: 25, def: 3, agi: 4, skills: 5, color: 0xD45A5A },
-  { characterClass: 'archer', name: '弓箭手', assetName: 'archer', hp: 270, mp: 150, atk: 20, def: 1.5, agi: 6, skills: 6, color: 0x5ABD6A },
+  { characterClass: 'knight', name: '骑士', assetName: 'knight', hp: 300, mp: 150, atk: 30, def: 2, agi: 7, skills: 6, color: 0x5A9BD5, spriteScale: 0.41 },
+  { characterClass: 'armored-warrior', name: '装甲战士', assetName: 'armored-warrior', hp: 350, mp: 120, atk: 25, def: 3, agi: 4, skills: 5, color: 0xD45A5A, spriteScale: 0.55 },
+  { characterClass: 'archer', name: '弓箭手', assetName: 'archer', hp: 270, mp: 150, atk: 20, def: 1.5, agi: 6, skills: 6, color: 0x5ABD6A, spriteScale: 0.55 },
 ];
 
 /**
@@ -149,7 +150,7 @@ export class CharSelectScene extends BaseScene {
         const sprite = new Sprite(texture);
         sprite.anchor.set(0.5, 0.5);
         sprite.position.set(w / 2, 85);
-        sprite.scale.set(0.55);
+        sprite.scale.set(char.spriteScale);
         card.addChild(sprite);
       }
     } catch {

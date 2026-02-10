@@ -16,7 +16,7 @@ export class ArrowRainEffect extends Container {
     // Sky darkening overlay
     this.darkOverlay = new Graphics();
     this.darkOverlay.rect(0, 0, screenWidth, screenHeight);
-    this.darkOverlay.fill({ color: 0x000000, alpha: 0.4 });
+    this.darkOverlay.fill({ color: 0x8090A0, alpha: 0.3 });
     this.darkOverlay.alpha = 0;
     this.addChild(this.darkOverlay);
 
@@ -58,13 +58,13 @@ export class ArrowRainEffect extends Container {
       // Small arrow pointing down
       this.arrows.moveTo(x, y - 8);
       this.arrows.lineTo(x, y + 8);
-      this.arrows.stroke({ color: 0xFFD700, width: 1.5, alpha: 0.8 - wave * 0.2 });
+      this.arrows.stroke({ color: 0xB8960C, width: 1.5, alpha: 0.8 - wave * 0.2 });
 
       // Arrow head
       this.arrows.moveTo(x - 3, y + 4);
       this.arrows.lineTo(x, y + 8);
       this.arrows.lineTo(x + 3, y + 4);
-      this.arrows.stroke({ color: 0xFFD700, width: 1, alpha: 0.6 });
+      this.arrows.stroke({ color: 0xB8960C, width: 1, alpha: 0.6 });
     }
   }
 }
