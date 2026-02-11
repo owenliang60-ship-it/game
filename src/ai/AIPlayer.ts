@@ -259,27 +259,39 @@ export class AIPlayer {
       escapeValue += attackProb * estimatedDmg * escapeSuccessRate * avgDodgeRate;
     }
 
-    // Strategic: character identity bonuses
-    if (fighter.characterClass === 'knight' && hasWhip) {
-      escapeValue += 15; // guerrilla warfare is knight's design core
+    // Diminishing returns: multi-enemy tactical value grows sub-linearly
+    // Prevents escape from being disproportionately good in FFA
+    if (enemies.length > 1) {
+      escapeValue *= Math.sqrt(enemies.length) / enemies.length;
     }
-    if (fighter.characterClass === 'archer' && fighter.hp / fighter.maxHp < 0.5) {
-      escapeValue += 8; // squishy, escape is wise
+
+    const hpPercent = fighter.hp / fighter.maxHp;
+
+    // Strategic: character identity bonuses (only under HP pressure)
+    // In 1v1, escape has less strategic value (no others to fight while you watch)
+    if (fighter.characterClass === 'knight' && hasWhip && hpPercent < 0.8) {
+      escapeValue += enemies.length === 1 ? 8 : 15;
+    }
+    if (fighter.characterClass === 'archer' && hpPercent < 0.5) {
+      escapeValue += 8;
     }
 
     // Combo: chase-slash setup (knight escape → pursuit next round)
     if (fighter.characterClass === 'knight' && fighter.mp >= 10) {
-      escapeValue += 8;
+      escapeValue += enemies.length === 1 ? 4 : 8;
     }
 
     // Survival multiplier: lower HP = more valuable to avoid damage
-    const hpPercent = fighter.hp / fighter.maxHp;
     escapeValue *= (1 + (1 - hpPercent) * 1.5);
 
-    // Anti-repeat: consecutive escape penalty
+    // Escape fatigue: penalize frequent escaping (prevents turtle strategy)
     const history = this.actionHistory.get(fighter.id);
-    if (history && history.length > 0 && history[history.length - 1] === 'escape') {
-      escapeValue *= 0.5;
+    if (history && history.length >= 2) {
+      const window = history.slice(-3);
+      const escapeCount = window.filter(a => a === 'escape').length;
+      if (escapeCount >= 1) {
+        escapeValue *= Math.max(0.25, 1 - escapeCount * 0.25);
+      }
     }
 
     return escapeValue;
@@ -489,10 +501,15 @@ export class AIPlayer {
         // Value if enemies likely to use melee
         return 30 + enemies.filter(e => e.basicAttackType === 'melee').length * 10;
 
-      case 'whip-boost':
-        // Value early game (AGI and escape benefits compound)
-        if (fighter.whipUsed) return -100; // Already used, don't pick again
-        return round <= 3 ? 35 : 15;
+      case 'whip-boost': {
+        // Whip is a strategic investment: permanent AGI+1, 70% escape, near-immunity to basic attacks
+        // Must beat charge (~50 damage) in early rounds to be worth picking
+        if (fighter.whipUsed) return -100;
+        const earlyBonus = round <= 2 ? 25 : round <= 4 ? 10 : 0;
+        const baseWhipValue = 35 + earlyBonus + enemies.length * 5;
+        // In 1v1, whip investment is bigger (lose 1 of 2 players' turns, no FFA advantage)
+        return enemies.length === 1 ? baseWhipValue * 0.75 : baseWhipValue;
+      }
 
       default:
         return 10;
