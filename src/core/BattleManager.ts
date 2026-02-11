@@ -1,6 +1,6 @@
 import type {
   BattleConfig, BattleState, Fighter, ChosenAction,
-  AvailableAction, CharacterId, FighterSnapshot, AIDifficulty,
+  AvailableAction, CharacterId, FighterSnapshot,
 } from './types';
 import { EventBus } from './EventBus';
 import { DamageCalculator } from './DamageCalculator';
@@ -33,7 +33,7 @@ export class BattleManager {
 
   constructor(config: BattleConfig) {
     this.state = createBattleState(config);
-    this.aiPlayer = new AIPlayer(config.aiDifficulty ?? 'normal');
+    this.aiPlayer = new AIPlayer();
     this.resolver = new ActionResolver(this.damageCalc, this.statusMgr, this.events);
   }
 
