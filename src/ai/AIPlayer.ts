@@ -2,6 +2,10 @@ import type {
   Fighter, ChosenAction, AvailableAction, CharacterId, CharacterClass, SkillDef, ActionType,
 } from '@/core/types';
 import { getSkill } from '@/skills';
+import {
+  buildPayoffMatrix, predictOpponent, selectBestResponse,
+  getOpponentAffordableActions,
+} from './PayoffMatrix';
 
 /**
  * AI decision engine with opponent prediction system.
@@ -75,6 +79,12 @@ export class AIPlayer {
       return chosen;
     }
 
+    // 1v1: use exhaustive payoff matrix for game-theoretic decision making
+    if (enemies.length === 1) {
+      return this.choose1v1Action(fighter, enemies[0], affordable, round);
+    }
+
+    // FFA (2+ enemies): use heuristic prediction-based evaluation
     // Phase 1: Predict opponent actions
     const predictions = new Map<string, ActionPrediction>();
     for (const enemy of enemies) {
@@ -91,6 +101,50 @@ export class AIPlayer {
     // Softmax selection
     const index = this.softmaxSelect(scores);
     const chosen = this.buildAction(affordable[index], fighter, enemies);
+    this.recordAction(fighter.id, chosen.type);
+    return chosen;
+  }
+
+  // ============================================================
+  // 1v1 Payoff Matrix Path
+  // ============================================================
+
+  /**
+   * Choose action in 1v1 using exhaustive payoff matrix.
+   * Computes exact outcomes for all (myAction, opAction) pairs,
+   * predicts opponent via level-1 reasoning, then picks best response.
+   */
+  private choose1v1Action(
+    fighter: Readonly<Fighter>,
+    opponent: Readonly<Fighter>,
+    myActions: AvailableAction[],
+    round: number
+  ): ChosenAction {
+    const opActions = getOpponentAffordableActions(opponent);
+    const result = buildPayoffMatrix(fighter, opponent, myActions, opActions, round);
+
+    // Build history frequency for blending
+    const history = this.actionHistory.get(opponent.id);
+    let historyFreq: Map<ActionType, number> | null = null;
+    let historyCount = 0;
+    if (history && history.length >= 3) {
+      historyCount = history.length;
+      const recent = history.slice(-5);
+      historyFreq = new Map<ActionType, number>();
+      for (const a of recent) {
+        historyFreq.set(a, (historyFreq.get(a) ?? 0) + 1);
+      }
+      // Convert counts to frequencies
+      for (const [k, v] of historyFreq) {
+        historyFreq.set(k, v / recent.length);
+      }
+    }
+
+    const opProbs = predictOpponent(result, historyFreq, historyCount);
+    const selectedIdx = selectBestResponse(result, opProbs, this.temperature);
+    const selectedAction = myActions[selectedIdx];
+
+    const chosen = this.buildAction(selectedAction, fighter, [opponent]);
     this.recordAction(fighter.id, chosen.type);
     return chosen;
   }
